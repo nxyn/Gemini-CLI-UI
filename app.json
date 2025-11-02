@@ -23,15 +23,18 @@
       },
       "package": "com.geminicliui.app",
       "versionCode": 1,
-      "compileSdkVersion": 33,
-      "targetSdkVersion": 33,
-      "minSdkVersion": 21,
+      "compileSdkVersion": 34,
+      "targetSdkVersion": 34,
+      "minSdkVersion": 23,
       "permissions": [
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE"
       ],
-      "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "blockNetworkRequests": false,
+      "jsEngine": "hermes",
+      "hermesFlags": [
+        "-Xgc-max-heap-size=2048M"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
