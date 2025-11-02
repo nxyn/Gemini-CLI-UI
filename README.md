@@ -14,14 +14,17 @@ A cross-platform AI development assistant built with React Native Web and Expo. 
 
 ## Tech Stack
 
-- **Frontend**: React Native 0.81+ with Expo
+- **Frontend**: React Native 0.74+ with **Expo 51**
 - **Navigation**: React Navigation 6+
 - **UI Components**: React Native Paper
+- **JavaScript Engine**: Hermes (improved performance)
 - **Backend**: Vercel Serverless Functions
 - **Database**: Supabase (PostgreSQL)
 - **Authentication**: Supabase Auth
 - **AI Integration**: Google Gemini API
 - **Deployment**: Vercel (Free Tier)
+
+🆕 **Updated to Expo 51** - See [EXPO_51_UPDATE.md](./EXPO_51_UPDATE.md) for details.
 
 ## Quick Start
 
@@ -37,8 +40,10 @@ A cross-platform AI development assistant built with React Native Web and Expo. 
 ```bash
 git clone <your-repo-url>
 cd Gemini-CLI-UI
-npm install
+npm install --legacy-peer-deps
 ```
+
+**Note**: Use `--legacy-peer-deps` for compatibility with Expo 51 dependencies.
 
 ### 2. Set Up Supabase
 
