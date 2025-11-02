@@ -196,6 +196,12 @@ The app uses React Native StyleSheet objects instead of Tailwind CSS for better 
    - Clear Expo cache: `expo start -c`
    - Check for conflicting package versions
 
+4. **Android Build Issues**
+   - Ensure EAS CLI is installed: `npm install -g eas-cli`
+   - Check Expo login: `expo whoami`
+   - Verify environment variables in `.env` file
+   - Use automated script: `./build-android.sh`
+
 ## License
 
 MIT License - feel free to use this project for personal or commercial purposes.
