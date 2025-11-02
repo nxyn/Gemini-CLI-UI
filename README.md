@@ -1,9 +1,27 @@
-<div align="center">
-  <img src="public/logo.svg" alt="Gemini CLI UI" width="64" height="64">
-  <h1>Gemini CLI UI</h1>
-</div>
+# Gemini CLI UI - React Native Web
 
-A desktop and mobile UI for [Gemini CLI](https://github.com/google-gemini/gemini-cli), Google's official CLI for AI-assisted coding. You can use it locally or remotely to view your active projects and sessions in Gemini CLI and make changes to them the same way you would do it in Gemini CLI. This gives you a proper interface that works everywhere.
+A cross-platform AI development assistant built with React Native Web and Expo. Deployable to Vercel with free tier services.
+
+## Features
+
+- 🤖 **AI Chat Interface** - Real-time conversations with Google Gemini AI
+- 📁 **File Management** - Create, edit, and manage project files
+- 🏗️ **Project Organization** - Organize conversations and files by project
+- 📱 **Cross-Platform** - Works on web, iOS, and Android
+- 🔐 **Secure Authentication** - Built with Supabase Auth
+- 🎨 **Modern UI** - Beautiful dark theme with smooth animations
+- 💾 **Cloud Storage** - All data stored in Supabase cloud database
+
+## Tech Stack
+
+- **Frontend**: React Native 0.81+ with Expo
+- **Navigation**: React Navigation 6+
+- **UI Components**: React Native Paper
+- **Backend**: Vercel Serverless Functions
+- **Database**: Supabase (PostgreSQL)
+- **Authentication**: Supabase Auth
+- **AI Integration**: Google Gemini API
+- **Deployment**: Vercel (Free Tier)
 
 
 ## Screenshots
