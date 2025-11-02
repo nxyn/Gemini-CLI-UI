@@ -14,7 +14,10 @@
       "backgroundColor": "#0f172a"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.geminicliui.app",
+      "jsEngine": "hermes",
+      "buildNumber": "1.0.0"
     },
     "android": {
       "adaptiveIcon": {
