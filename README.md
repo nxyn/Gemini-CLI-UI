@@ -78,11 +78,26 @@ npm run web
 # iOS (requires Xcode)
 npm run ios
 
-# Android (requires Android Studio)
+# Android (requires Android Studio or Expo Go)
 npm run android
 ```
 
-### 5. Deploy to Vercel
+### 5. Build Android APK
+
+For creating an Android APK/AAB file:
+
+```bash
+# Automated build script (recommended)
+./build-android.sh
+
+# Or manual build using EAS
+npm install -g eas-cli
+eas build --platform android --profile preview
+```
+
+📖 **Detailed Instructions**: See [ANDROID_BUILD.md](./ANDROID_BUILD.md) for complete Android build guide.
+
+### 6. Deploy to Vercel
 
 1. Push your code to GitHub
 2. Connect your repository to Vercel
