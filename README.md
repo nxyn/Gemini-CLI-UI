@@ -40,8 +40,10 @@ A cross-platform AI development assistant built with React Native Web and Expo. 
 ```bash
 git clone <your-repo-url>
 cd Gemini-CLI-UI
-npm install
+npm install --legacy-peer-deps
 ```
+
+**Note**: Use `--legacy-peer-deps` for compatibility with Expo 51 dependencies.
 
 ### 2. Set Up Supabase
 
