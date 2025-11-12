@@ -1,342 +1,414 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  FlatList,
+  ScrollView,
   StyleSheet,
+  Text,
   KeyboardAvoidingView,
   Platform,
-  Alert,
+  ActivityIndicator,
+  TouchableOpacity,
+  Image,
 } from 'react-native';
-import { useRoute } from '@react-navigation/native';
-import { RouteProp } from '@react-navigation/native';
-import { Button } from 'react-native-paper';
-import { Ionicons } from '@expo/vector-icons';
-import { supabase } from '../utils/supabase';
+import { LinearGradient } from 'expo-linear-gradient';
+import { LiquidGlassCard, LiquidGlassInput, LiquidGlassButton } from '../components/liquid';
+import { geminiApi } from '../services/geminiApi';
+import { geminiStorage, GeminiSession, GeminiMessage } from '../services/geminiStorage';
 import Markdown from 'react-native-markdown-display';
+import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system';
+import { Ionicons } from '@expo/vector-icons';
 
-interface Message {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  created_at: string;
+interface ChatScreenProps {
+  route: {
+    params: {
+      projectId: string;
+      sessionId: string;
+    };
+  };
+  navigation: any;
 }
 
-type RootStackParamList = {
-  Chat: { projectId: string; sessionId?: string };
-};
-
-type ChatScreenRouteProp = RouteProp<RootStackParamList, 'Chat'>;
-
-export default function ChatScreen() {
-  const route = useRoute<ChatScreenRouteProp>();
+export default function ChatScreen({ route, navigation }: ChatScreenProps) {
   const { projectId, sessionId } = route.params;
 
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [session, setSession] = useState<GeminiSession | null>(null);
+  const [messages, setMessages] = useState<GeminiMessage[]>([]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
-  const [streamingMessage, setStreamingMessage] = useState('');
-  const flatListRef = useRef<FlatList>(null);
+  const [streamingResponse, setStreamingResponse] = useState('');
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
-    if (sessionId) {
-      loadSessionMessages();
-    }
-  }, [sessionId]);
+    loadSession();
+  }, [projectId, sessionId]);
 
-  const loadSessionMessages = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('session_id', sessionId)
-        .order('created_at', { ascending: true });
+  useEffect(() => {
+    // Auto-scroll to bottom when messages change
+    scrollViewRef.current?.scrollToEnd({ animated: true });
+  }, [messages, streamingResponse]);
 
-      if (error) throw error;
-      setMessages(data || []);
-    } catch (error: any) {
-      Alert.alert('Error', 'Failed to load messages');
+  const loadSession = async () => {
+    const loadedSession = await geminiStorage.getSession(projectId, sessionId);
+    if (loadedSession) {
+      setSession(loadedSession);
+      setMessages(loadedSession.messages);
     }
   };
 
-  const sendMessage = async () => {
-    if (!inputText.trim()) return;
+  const handleSend = async () => {
+    if (!inputText.trim() && selectedImages.length === 0) return;
 
-    const userMessage = {
-      id: Date.now().toString(),
-      role: 'user' as const,
-      content: inputText.trim(),
-      created_at: new Date().toISOString(),
-    };
-
-    setMessages(prev => [...prev, userMessage]);
+    const userMessage = inputText.trim();
     setInputText('');
+    const imagesToSend = [...selectedImages];
+    setSelectedImages([]);
     setLoading(true);
-    setStreamingMessage('');
+    setStreamingResponse('');
 
     try {
-      // Create or get session
-      let currentSessionId = sessionId;
-      if (!currentSessionId) {
-        const { data: sessionData, error: sessionError } = await supabase
-          .from('sessions')
-          .insert({
-            project_id: projectId,
-            title: inputText.trim().slice(0, 50),
-          })
-          .select()
-          .single();
+      // Stream the response
+      const stream = await geminiApi.sendMessage(
+        projectId,
+        sessionId,
+        userMessage,
+        imagesToSend
+      );
 
-        if (sessionError) throw sessionError;
-        currentSessionId = sessionData.id;
+      let fullResponse = '';
+
+      for await (const chunk of stream) {
+        fullResponse += chunk;
+        setStreamingResponse(fullResponse);
       }
 
-      // Save user message
-      await supabase
-        .from('messages')
-        .insert({
-          session_id: currentSessionId,
-          role: 'user',
-          content: userMessage.content,
-        });
+      // Save the complete response
+      await geminiApi.saveResponse(projectId, sessionId, fullResponse);
 
-      // Stream response from Gemini API via serverless function
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: userMessage.content,
-          projectId,
-          sessionId: currentSessionId,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to get response');
-      }
-
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error('No response body');
-
-      let assistantMessage = '';
-      const decoder = new TextDecoder();
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value);
-        const lines = chunk.split('\n');
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6);
-            if (data === '[DONE]') continue;
-
-            try {
-              const parsed = JSON.parse(data);
-              if (parsed.content) {
-                assistantMessage += parsed.content;
-                setStreamingMessage(assistantMessage);
-              }
-            } catch (e) {
-              // Ignore parsing errors
-            }
-          }
-        }
-      }
-
-      // Save assistant message
-      if (assistantMessage) {
-        const { error } = await supabase
-          .from('messages')
-          .insert({
-            session_id: currentSessionId,
-            role: 'assistant',
-            content: assistantMessage,
-          });
-
-        if (error) throw error;
-
-        setMessages(prev => [
-          ...prev,
-          {
-            id: Date.now().toString(),
-            role: 'assistant',
-            content: assistantMessage,
-            created_at: new Date().toISOString(),
-          },
-        ]);
-      }
-
-      setStreamingMessage('');
-    } catch (error: any) {
-      Alert.alert('Error', error.message);
-      setStreamingMessage('');
+      // Reload session to get updated messages
+      await loadSession();
+      setStreamingResponse('');
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      alert(error instanceof Error ? error.message : 'Failed to send message');
     } finally {
       setLoading(false);
     }
   };
 
-  const renderMessage = ({ item }: { item: Message }) => (
-    <View
-      style={[
-        styles.messageContainer,
-        item.role === 'user' ? styles.userMessage : styles.assistantMessage,
-      ]}
-    >
-      <Text style={styles.messageRole}>
-        {item.role === 'user' ? 'You' : 'Gemini'}
-      </Text>
-      <Markdown style={item.role === 'user' ? styles.userMarkdown : styles.assistantMarkdown}>
-        {item.content}
-      </Markdown>
-    </View>
-  );
+  const handlePickImage = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'image/*',
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled) {
+        return;
+      }
+
+      const asset = result.assets[0];
+
+      // Read the file as base64
+      const base64 = await FileSystem.readAsStringAsync(asset.uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      const mimeType = asset.mimeType || 'image/jpeg';
+      const imageData = `data:${mimeType};base64,${base64}`;
+
+      setSelectedImages([...selectedImages, imageData]);
+    } catch (error) {
+      console.error('Failed to pick image:', error);
+      alert('Failed to pick image');
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setSelectedImages(selectedImages.filter((_, i) => i !== index));
+  };
+
+  const renderMessage = (message: GeminiMessage) => {
+    const isUser = message.role === 'user';
+
+    return (
+      <View
+        key={message.id}
+        style={[styles.messageContainer, isUser && styles.userMessageContainer]}
+      >
+        <LiquidGlassCard
+          style={[
+            styles.messageCard,
+            isUser ? styles.userMessage : styles.assistantMessage,
+          ]}
+        >
+          <View style={styles.messageHeader}>
+            <Ionicons
+              name={isUser ? 'person' : 'sparkles'}
+              size={16}
+              color={isUser ? '#14b8a6' : '#3b82f6'}
+            />
+            <Text style={styles.messageRole}>
+              {isUser ? 'You' : 'Gemini'}
+            </Text>
+          </View>
+
+          {message.images && message.images.length > 0 && (
+            <View style={styles.imagesContainer}>
+              {message.images.map((img, idx) => (
+                <Image
+                  key={idx}
+                  source={{ uri: img }}
+                  style={styles.messageImage}
+                  resizeMode="cover"
+                />
+              ))}
+            </View>
+          )}
+
+          <Markdown style={markdownStyles}>{message.content}</Markdown>
+
+          <Text style={styles.timestamp}>
+            {new Date(message.timestamp).toLocaleTimeString()}
+          </Text>
+        </LiquidGlassCard>
+      </View>
+    );
+  };
 
   return (
-    <KeyboardAvoidingView
+    <LinearGradient
+      colors={['#0f172a', '#1e293b', '#334155']}
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <View style={styles.messagesContainer}>
-        <FlatList
-          ref={flatListRef}
-          data={messages}
-          renderItem={renderMessage}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.messagesList}
-          onContentSizeChange={() => flatListRef.current?.scrollToEnd()}
-        />
-
-        {streamingMessage && (
-          <View style={[styles.messageContainer, styles.assistantMessage]}>
-            <Text style={styles.messageRole}>Gemini</Text>
-            <Markdown style={styles.assistantMarkdown}>
-              {streamingMessage}
-            </Markdown>
-          </View>
-        )}
-      </View>
-
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.textInput}
-          value={inputText}
-          onChangeText={setInputText}
-          placeholder="Type your message..."
-          placeholderTextColor="#64748b"
-          multiline
-          maxLength={4000}
-          editable={!loading}
-        />
-
-        <TouchableOpacity
-          style={[styles.sendButton, loading && styles.sendButtonDisabled]}
-          onPress={sendMessage}
-          disabled={loading || !inputText.trim()}
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={100}
+      >
+        <ScrollView
+          ref={scrollViewRef}
+          style={styles.messagesContainer}
+          contentContainerStyle={styles.messagesContent}
         >
-          <Ionicons
-            name={loading ? 'ellipsis-horizontal' : 'send'}
-            size={20}
-            color="#fff"
-          />
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+          {messages.map(renderMessage)}
+
+          {streamingResponse && (
+            <View style={styles.messageContainer}>
+              <LiquidGlassCard style={[styles.messageCard, styles.assistantMessage]}>
+                <View style={styles.messageHeader}>
+                  <Ionicons name="sparkles" size={16} color="#3b82f6" />
+                  <Text style={styles.messageRole}>Gemini</Text>
+                  <ActivityIndicator size="small" color="#3b82f6" style={styles.streamingIndicator} />
+                </View>
+                <Markdown style={markdownStyles}>{streamingResponse}</Markdown>
+              </LiquidGlassCard>
+            </View>
+          )}
+        </ScrollView>
+
+        <View style={styles.inputContainer}>
+          {selectedImages.length > 0 && (
+            <ScrollView
+              horizontal
+              style={styles.selectedImagesContainer}
+              contentContainerStyle={styles.selectedImagesContent}
+            >
+              {selectedImages.map((img, idx) => (
+                <View key={idx} style={styles.selectedImageWrapper}>
+                  <Image
+                    source={{ uri: img }}
+                    style={styles.selectedImage}
+                    resizeMode="cover"
+                  />
+                  <TouchableOpacity
+                    style={styles.removeImageButton}
+                    onPress={() => removeImage(idx)}
+                  >
+                    <Ionicons name="close-circle" size={24} color="#ef4444" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </ScrollView>
+          )}
+
+          <View style={styles.inputRow}>
+            <TouchableOpacity
+              style={styles.attachButton}
+              onPress={handlePickImage}
+              disabled={loading}
+            >
+              <Ionicons name="image" size={24} color="#14b8a6" />
+            </TouchableOpacity>
+
+            <LiquidGlassInput
+              containerStyle={styles.input}
+              placeholder="Ask Gemini anything..."
+              value={inputText}
+              onChangeText={setInputText}
+              multiline
+              maxLength={5000}
+              editable={!loading}
+            />
+
+            <View style={styles.sendButtonContainer}>
+              <LiquidGlassButton
+                onPress={handleSend}
+                title={loading ? '' : 'Send'}
+                disabled={loading || (!inputText.trim() && selectedImages.length === 0)}
+                loading={loading}
+                style={styles.sendButton}
+              />
+            </View>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
   },
   messagesContainer: {
     flex: 1,
   },
-  messagesList: {
+  messagesContent: {
     padding: 16,
   },
   messageContainer: {
-    marginVertical: 8,
-    padding: 16,
-    borderRadius: 12,
+    marginBottom: 12,
+  },
+  userMessageContainer: {
+    alignItems: 'flex-end',
+  },
+  messageCard: {
     maxWidth: '85%',
   },
   userMessage: {
-    backgroundColor: '#3b82f6',
     alignSelf: 'flex-end',
-    marginLeft: '15%',
   },
   assistantMessage: {
-    backgroundColor: '#1e293b',
     alignSelf: 'flex-start',
-    marginRight: '15%',
-    borderWidth: 1,
-    borderColor: '#334155',
+  },
+  messageHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
   },
   messageRole: {
-    fontSize: 12,
+    color: '#fff',
+    fontSize: 14,
     fontWeight: '600',
+    marginLeft: 6,
+  },
+  streamingIndicator: {
+    marginLeft: 8,
+  },
+  imagesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     marginBottom: 8,
-    opacity: 0.8,
+    gap: 8,
   },
-  userMarkdown: {
-    body: { color: '#fff', fontSize: 16 },
-    paragraph: { marginBottom: 8 },
+  messageImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 8,
   },
-  assistantMarkdown: {
-    body: { color: '#e2e8f0', fontSize: 16 },
-    paragraph: { marginBottom: 8 },
-    code_inline: {
-      backgroundColor: '#334155',
-      color: '#f59e0b',
-      paddingHorizontal: 4,
-      borderRadius: 4,
-    },
-    code_block: {
-      backgroundColor: '#334155',
-      color: '#f59e0b',
-      padding: 12,
-      borderRadius: 8,
-      fontFamily: 'monospace',
-    },
+  timestamp: {
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontSize: 12,
+    marginTop: 8,
   },
   inputContainer: {
-    flexDirection: 'row',
     padding: 16,
-    backgroundColor: '#1e293b',
-    borderTopWidth: 1,
-    borderTopColor: '#334155',
-    alignItems: 'flex-end',
+    paddingBottom: Platform.OS === 'ios' ? 32 : 16,
   },
-  textInput: {
+  selectedImagesContainer: {
+    marginBottom: 12,
+  },
+  selectedImagesContent: {
+    gap: 8,
+  },
+  selectedImageWrapper: {
+    position: 'relative',
+  },
+  selectedImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+  },
+  removeImageButton: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 8,
+  },
+  attachButton: {
+    padding: 12,
+  },
+  input: {
     flex: 1,
-    backgroundColor: '#0f172a',
-    borderWidth: 1,
-    borderColor: '#334155',
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    color: '#fff',
-    fontSize: 16,
     maxHeight: 120,
-    marginRight: 12,
+  },
+  sendButtonContainer: {
+    width: 80,
   },
   sendButton: {
-    backgroundColor: '#3b82f6',
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sendButtonDisabled: {
-    backgroundColor: '#475569',
+    minHeight: 48,
   },
 });
+
+const markdownStyles = {
+  body: {
+    color: '#fff',
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  code_inline: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    color: '#14b8a6',
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    borderRadius: 4,
+    fontFamily: 'monospace',
+  },
+  code_block: {
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    padding: 12,
+    borderRadius: 8,
+    fontFamily: 'monospace',
+    color: '#e5e7eb',
+  },
+  fence: {
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    padding: 12,
+    borderRadius: 8,
+    fontFamily: 'monospace',
+    color: '#e5e7eb',
+  },
+  link: {
+    color: '#3b82f6',
+  },
+  heading1: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  heading2: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginTop: 12,
+    marginBottom: 6,
+  },
+};

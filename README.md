@@ -1,224 +1,286 @@
-# Gemini CLI UI - React Native Web
+# Gemini Mobile - Liquid Glass Design
 
-A cross-platform AI development assistant built with React Native Web and Expo. Deployable to Vercel with free tier services.
+A beautiful Expo-based mobile application for interacting with Google Gemini AI, featuring a stunning liquid glass design and direct mobile storage access for file editing.
 
-## Features
+## 🌟 Features
 
-- 🤖 **AI Chat Interface** - Real-time conversations with Google Gemini AI
-- 📁 **File Management** - Create, edit, and manage project files
-- 🏗️ **Project Organization** - Organize conversations and files by project
-- 📱 **Cross-Platform** - Works on web, iOS, and Android
-- 🔐 **Secure Authentication** - Built with Supabase Auth
-- 🎨 **Modern UI** - Beautiful dark theme with smooth animations
-- 💾 **Cloud Storage** - All data stored in Supabase cloud database
+- 🌈 **Liquid Glass Design**: Beautiful glassmorphic UI with blur effects and gradients
+- 💾 **Direct File System Access**: No sandbox limitations - edit files directly in mobile storage
+- 🤖 **Gemini AI Integration**: Full-featured chat interface with streaming responses
+- 🖼️ **Image Support**: Upload and send images to Gemini
+- 💻 **Code Editor**: Syntax-highlighted mobile code editor
+- 📁 **Project Management**: Create and manage multiple Gemini projects
+- 📝 **Session History**: Store and retrieve conversation history
+- 📳 **Haptic Feedback**: Tactile responses for better UX
 
-## Tech Stack
+## 🎨 Design System
+
+### Liquid Glass Components
+- Frosted glass cards with blur effects
+- Smooth gradient backgrounds
+- Animated interactions with haptic feedback
+- Responsive layouts optimized for mobile
+
+### Colors
+- **Primary**: Teal (#14b8a6)
+- **Secondary**: Blue (#3b82f6)
+- **Background Gradient**: Slate (#0f172a → #1e293b → #334155)
+- **Danger**: Red (#ef4444)
+
+## 📱 Tech Stack
 
 - **Frontend**: React Native 0.74+ with **Expo 51**
 - **Navigation**: React Navigation 6+
-- **UI Components**: React Native Paper
+- **UI Effects**: Expo Blur, Linear Gradient
+- **Storage**: Expo FileSystem + AsyncStorage
 - **JavaScript Engine**: Hermes (improved performance)
-- **Backend**: Vercel Serverless Functions
-- **Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth
-- **AI Integration**: Google Gemini API
-- **Deployment**: Vercel (Free Tier)
+- **AI Integration**: Google Gemini API (Direct REST API)
+- **Markdown**: React Native Markdown Display
+- **Syntax Highlighting**: React Native Syntax Highlighter
 
-🆕 **Updated to Expo 51** - See [EXPO_51_UPDATE.md](./EXPO_51_UPDATE.md) for details.
-
-## Quick Start
+## 🚀 Getting Started
 
 ### Prerequisites
 
-1. **Node.js** 18+ installed
-2. **Supabase** account (free tier)
-3. **Google Gemini API** key
-4. **Vercel** account (free tier)
+- Node.js 18+ and npm/yarn
+- Expo CLI: `npm install -g expo-cli`
+- iOS: Xcode 14+ and iOS 13+ device or simulator
+- Android: Android Studio with SDK 23+ or Android device
+- **Google Gemini API Key** - Get it from [Google AI Studio](https://makersuite.google.com/app/apikey)
 
-### 1. Clone and Install
+### Installation
 
+1. **Clone the repository**
 ```bash
 git clone <your-repo-url>
-cd Gemini-CLI-UI
-npm install --legacy-peer-deps
+cd gemini-cli-ui
 ```
 
-**Note**: Use `--legacy-peer-deps` for compatibility with Expo 51 dependencies.
-
-### 2. Set Up Supabase
-
-1. Go to [supabase.com](https://supabase.com) and create a new project
-2. In your Supabase project dashboard:
-   - Go to Settings > Database
-   - Run the SQL from `supabase-schema.sql` in the SQL Editor
-   - Go to Settings > API and copy your:
-     - Project URL
-     - `anon` key
-     - `service_role` key
-
-### 3. Set Environment Variables
-
-Create a `.env.local` file:
-
+2. **Install dependencies**
 ```bash
-# Supabase Configuration
-EXPO_PUBLIC_SUPABASE_URL=your_supabase_project_url
-EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-
-# For Vercel deployment
-SUPABASE_URL=your_supabase_project_url
-SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-
-# Google Gemini API
-GEMINI_API_KEY=your_gemini_api_key
+npm install
 ```
 
-### 4. Run Locally
-
+3. **Start the development server**
 ```bash
-# Web version
-npm run web
-
-# iOS (requires Xcode)
-npm run ios
-
-# Android (requires Android Studio or Expo Go)
-npm run android
+npm start
 ```
 
-### 5. Build Android APK
+4. **Run on your device**
+- **iOS**: Press `i` or scan QR code with Camera app
+- **Android**: Press `a` or scan QR code with Expo Go app
 
-For creating an Android APK/AAB file:
+### First Launch Setup
+
+When you first launch the app:
+
+1. Navigate to **Settings** (gear icon on Projects screen)
+2. Enter your **Gemini API Key**
+3. Optionally change the model (default: gemini-2.5-flash)
+4. Return to Projects and create your first project!
+
+## 📦 Building for Production
+
+### Android
 
 ```bash
-# Automated build script (recommended)
-./build-android.sh
-
-# Or manual build using EAS
+# Install EAS CLI
 npm install -g eas-cli
-eas build --platform android --profile preview
+
+# Login to Expo
+eas login
+
+# Build for Android
+npm run build:android
 ```
 
-📖 **Detailed Instructions**: See [ANDROID_BUILD.md](./ANDROID_BUILD.md) for complete Android build guide.
+### iOS
 
-### 6. Deploy to Vercel
+```bash
+# Build for iOS
+npm run build:ios
+```
 
-1. Push your code to GitHub
-2. Connect your repository to Vercel
-3. Set environment variables in Vercel dashboard
-4. Deploy!
+The builds will be managed by Expo Application Services (EAS) and you'll receive download links when complete.
 
-## Database Schema
+## 🏗️ Architecture
 
-The app uses these main tables:
+### Storage System
 
-- `profiles` - User profiles (linked to Supabase Auth)
-- `projects` - User projects
-- `sessions` - Chat sessions within projects
-- `messages` - Individual chat messages
-- `files` - Project files and code
+The app uses **Expo FileSystem** for direct file access without sandbox restrictions:
 
-## API Endpoints
+```
+{DocumentDirectory}/gemini/
+├── projects/
+│   ├── project_1234567890/
+│   │   ├── sessions/
+│   │   │   ├── session_1234567890.json
+│   │   │   └── session_1234567891.json
+│   │   └── files/
+│   │       ├── index.js
+│   │       └── README.md
+│   └── project_1234567891/
+│       └── ...
+```
 
-- `POST /api/chat` - Send messages to Gemini AI
-- `GET /api/projects` - List user projects
-- `POST /api/projects` - Create new project
-- `GET /api/files` - List project files
-- `POST /api/files` - Create new file
+**Key Benefits:**
+- ✅ Direct file system access
+- ✅ No sandbox limitations
+- ✅ Persistent storage across app restarts
+- ✅ Works offline after initial setup
 
-## Free Tier Limits
+### API Communication
 
-### Vercel (Free Plan)
-- 100GB bandwidth per month
-- 100,000 function invocations per month
-- Unlimited projects
+The app communicates directly with Gemini API using streaming:
 
-### Supabase (Free Plan)
-- 500MB database storage
-- 50MB file storage
-- 50,000 monthly active users
-- 1GB bandwidth
+```typescript
+// Example: Sending a message
+const stream = await geminiApi.sendMessage(
+  projectId,
+  sessionId,
+  'Hello Gemini!',
+  optionalImages
+);
 
-### Google Gemini API
-- Free tier available (limited requests per minute)
-- Pay-per-use after free tier limits
+for await (const chunk of stream) {
+  // Display streamed response in real-time
+  console.log(chunk);
+}
+```
 
-## Development
+## 🛠️ Development
 
 ### Project Structure
 
 ```
-src/
-├── screens/           # React Native screens
-│   ├── LoginScreen.tsx
-│   ├── ProjectsScreen.tsx
-│   ├── ChatScreen.tsx
-│   └── ...
-├── contexts/          # React contexts
-│   └── AuthContext.tsx
-├── utils/            # Utility functions
-│   └── supabase.ts
-└── components/       # Reusable components
-
-api/                  # Vercel serverless functions
-├── chat/
-│   └── index.js
-├── projects/
-│   └── index.js
-└── files/
-    └── index.js
+├── App.tsx                      # Main app entry with initialization
+├── index.ts                     # Expo entry point
+├── package.json                 # Dependencies
+├── app.json                     # Expo configuration
+├── src/
+│   ├── components/
+│   │   └── liquid/             # Liquid glass components
+│   │       ├── LiquidGlassView.tsx
+│   │       ├── LiquidGlassButton.tsx
+│   │       ├── LiquidGlassCard.tsx
+│   │       └── LiquidGlassInput.tsx
+│   ├── screens/                # App screens
+│   │   ├── ProjectsScreen.tsx
+│   │   ├── ChatScreen.tsx
+│   │   ├── CodeEditorScreen.tsx
+│   │   ├── FilesScreen.tsx
+│   │   └── SettingsScreen.tsx
+│   ├── services/               # Business logic
+│   │   ├── geminiStorage.ts   # Storage service
+│   │   └── geminiApi.ts       # API service
+│   └── contexts/              # React contexts (if needed)
 ```
 
-### Styling
+### Using Liquid Glass Components
 
-The app uses React Native StyleSheet objects instead of Tailwind CSS for better React Native compatibility.
+```tsx
+import { LiquidGlassCard, LiquidGlassButton } from '../components/liquid';
 
-### Contributing
+<LiquidGlassCard pressable onPress={handlePress}>
+  <Text>Beautiful glass effect!</Text>
+</LiquidGlassCard>
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+<LiquidGlassButton
+  onPress={handleAction}
+  title="Click Me"
+  variant="primary"
+  hapticFeedback
+/>
+```
 
-## Troubleshooting
+### Storage API Examples
 
-### Common Issues
+```typescript
+// Create a project
+const project = await geminiStorage.createProject('My Project');
 
-1. **Supabase Connection Errors**
-   - Verify your environment variables are correct
-   - Check that your Supabase project is active
-   - Ensure RLS policies are set up correctly
+// Create a session
+const session = await geminiStorage.createSession(projectId, 'Chat 1');
 
-2. **Gemini API Errors**
-   - Verify your API key is valid
-   - Check if you've exceeded rate limits
-   - Ensure the API is enabled in Google Cloud Console
+// Add a message
+await geminiStorage.addMessage(projectId, sessionId, {
+  role: 'user',
+  content: 'Hello Gemini!',
+  images: ['data:image/jpeg;base64,...'],
+});
 
-3. **Build Errors**
-   - Run `npm install` to ensure all dependencies are installed
-   - Clear Expo cache: `expo start -c`
-   - Check for conflicting package versions
+// Read/Write files
+const content = await geminiStorage.readFile(filePath);
+await geminiStorage.writeFile(filePath, newContent);
+```
 
-4. **Android Build Issues**
-   - Ensure EAS CLI is installed: `npm install -g eas-cli`
-   - Check Expo login: `expo whoami`
-   - Verify environment variables in `.env` file
-   - Use automated script: `./build-android.sh`
+## 🐛 Troubleshooting
 
-## License
+### App Won't Start
+
+- Clear cache: `expo start -c`
+- Reinstall dependencies: `rm -rf node_modules && npm install`
+- Update Expo: `npm install expo@latest`
+
+### Storage Issues
+
+- Check file system permissions in app.json
+- Verify DocumentDirectory is accessible
+- On Android: Ensure MANAGE_EXTERNAL_STORAGE permission is granted
+
+### Gemini API Errors
+
+- **401 Unauthorized**: Check your API key in Settings
+- **429 Too Many Requests**: You've exceeded rate limits, wait and try again
+- **Network Error**: Check internet connection
+
+### Build Failures
+
+- Ensure EAS CLI is installed: `npm install -g eas-cli`
+- Login to Expo: `eas login`
+- Check your Expo account has build credits
+- Verify app.json configuration is correct
+
+### Image Upload Issues
+
+- Ensure image picker permissions are granted
+- Check image file size (max recommended: 5MB)
+- Verify base64 encoding is correct
+
+## 💡 Tips & Best Practices
+
+- **Performance**: Test on physical devices for best performance
+- **Storage**: Files persist in app's document directory across updates
+- **API Keys**: Never commit API keys - store in AsyncStorage only
+- **Offline**: App works offline for viewing stored data
+- **Haptics**: Disable in settings if battery life is a concern
+
+## 🔒 Security Notes
+
+- API keys are stored securely in AsyncStorage
+- No backend server required - direct Gemini API communication
+- All data stored locally on device
+- Consider adding biometric authentication for production use
+
+## 📄 License
 
 MIT License - feel free to use this project for personal or commercial purposes.
 
-## Support
+## 🙏 Acknowledgments
 
-If you encounter any issues or have questions:
+- Google Gemini API for AI capabilities
+- Expo team for amazing development tools
+- React Native community for components
 
-1. Check the troubleshooting section above
-2. Open an issue on GitHub
-3. Join our Discord community (link coming soon)
+## 🔗 Useful Links
+
+- [Expo Documentation](https://docs.expo.dev/)
+- [Gemini API Docs](https://ai.google.dev/)
+- [React Navigation](https://reactnavigation.org/)
+- [React Native](https://reactnative.dev/)
 
 ---
 
-Built with ❤️ using React Native, Expo, and Supabase
+**Built with ❤️ using Expo and React Native**
+
+_Liquid glass design inspired by modern mobile UI trends_
