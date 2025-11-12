@@ -2,377 +2,356 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  FlatList,
-  TouchableOpacity,
+  ScrollView,
   StyleSheet,
   Alert,
   RefreshControl,
   TextInput,
   Modal,
+  TouchableOpacity,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useAuth } from '../contexts/AuthContext';
-import { Button } from 'react-native-paper';
+import { LinearGradient } from 'expo-linear-gradient';
+import { LiquidGlassCard, LiquidGlassButton, LiquidGlassInput } from '../components/liquid';
+import { geminiStorage, GeminiProject } from '../services/geminiStorage';
 import { Ionicons } from '@expo/vector-icons';
-import { supabase } from '../utils/supabase';
+import * as Haptics from 'expo-haptics';
 
-interface Project {
-  id: string;
-  name: string;
-  display_name: string;
-  created_at: string;
-  session_count?: number;
+interface ProjectsScreenProps {
+  navigation: any;
 }
 
-type RootStackParamList = {
-  Projects: undefined;
-  ProjectDetail: { projectId: string; projectName: string };
-  Settings: undefined;
-};
-
-type ProjectsScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Projects'>;
-
-export default function ProjectsScreen() {
-  const [projects, setProjects] = useState<Project[]>([]);
+export default function ProjectsScreen({ navigation }: ProjectsScreenProps) {
+  const [projects, setProjects] = useState<GeminiProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
-  const [newProjectDisplayName, setNewProjectDisplayName] = useState('');
   const [creatingProject, setCreatingProject] = useState(false);
-
-  const navigation = useNavigation<ProjectsScreenNavigationProp>();
-  const { user, signOut } = useAuth();
 
   useEffect(() => {
     loadProjects();
-  }, [user]);
+  }, []);
 
   const loadProjects = async () => {
-    if (!user) return;
-
     try {
-      const { data, error } = await supabase
-        .from('projects')
-        .select(`
-          *,
-          sessions(count)
-        `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      const projectsWithSessionCount = data.map(project => ({
-        ...project,
-        session_count: project.sessions?.[0]?.count || 0
-      }));
-
-      setProjects(projectsWithSessionCount);
-    } catch (error: any) {
-      Alert.alert('Error', error.message);
+      const loadedProjects = await geminiStorage.getProjects();
+      setProjects(loadedProjects);
+    } catch (error) {
+      console.error('Failed to load projects:', error);
+      Alert.alert('Error', 'Failed to load projects');
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   };
 
-  const onRefresh = () => {
+  const handleRefresh = () => {
     setRefreshing(true);
     loadProjects();
   };
 
-  const createProject = async () => {
+  const handleCreateProject = async () => {
     if (!newProjectName.trim()) {
-      Alert.alert('Error', 'Project name is required');
+      Alert.alert('Error', 'Please enter a project name');
       return;
     }
 
     setCreatingProject(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
     try {
-      const { data, error } = await supabase
-        .from('projects')
-        .insert({
-          name: newProjectName.trim(),
-          display_name: newProjectDisplayName.trim() || newProjectName.trim(),
-          user_id: user?.id,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setProjects([data, ...projects]);
+      const project = await geminiStorage.createProject(newProjectName.trim());
+      setProjects([project, ...projects]);
       setShowNewProjectModal(false);
       setNewProjectName('');
-      setNewProjectDisplayName('');
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
+      // Navigate to the new project
       navigation.navigate('ProjectDetail', {
-        projectId: data.id,
-        projectName: data.display_name,
+        projectId: project.id,
+        projectName: project.name,
       });
-    } catch (error: any) {
-      Alert.alert('Error', error.message);
+    } catch (error) {
+      console.error('Failed to create project:', error);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Alert.alert('Error', 'Failed to create project');
     } finally {
       setCreatingProject(false);
     }
   };
 
-  const handleSignOut = () => {
+  const handleDeleteProject = async (projectId: string, projectName: string) => {
     Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out?',
+      'Delete Project',
+      `Are you sure you want to delete "${projectName}"? This will delete all sessions and files.`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Sign Out',
+          text: 'Delete',
           style: 'destructive',
-          onPress: signOut,
+          onPress: async () => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+            try {
+              await geminiStorage.deleteProject(projectId);
+              setProjects(projects.filter((p) => p.id !== projectId));
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            } catch (error) {
+              console.error('Failed to delete project:', error);
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+              Alert.alert('Error', 'Failed to delete project');
+            }
+          },
         },
       ]
     );
   };
 
-  const renderProject = ({ item }: { item: Project }) => (
-    <TouchableOpacity
-      style={styles.projectCard}
-      onPress={() =>
-        navigation.navigate('ProjectDetail', {
-          projectId: item.id,
-          projectName: item.display_name,
-        })
-      }
-    >
-      <View style={styles.projectHeader}>
-        <Text style={styles.projectName}>{item.display_name}</Text>
-        <Ionicons name="chevron-forward" size={20} color="#64748b" />
-      </View>
-      <Text style={styles.projectDetails}>
-        {item.session_count} session{item.session_count !== 1 ? 's' : ''}
-      </Text>
-      <Text style={styles.projectDate}>
-        Created {new Date(item.created_at).toLocaleDateString()}
-      </Text>
-    </TouchableOpacity>
-  );
+  const handleProjectPress = (project: GeminiProject) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    navigation.navigate('ProjectDetail', {
+      projectId: project.id,
+      projectName: project.name,
+    });
+  };
 
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Loading projects...</Text>
-      </View>
-    );
-  }
+  const handleSettingsPress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    navigation.navigate('Settings');
+  };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <Text style={styles.title}>Projects</Text>
-          <TouchableOpacity onPress={handleSignOut} style={styles.signOutButton}>
-            <Ionicons name="log-out-outline" size={24} color="#ef4444" />
+    <LinearGradient
+      colors={['#0f172a', '#1e293b', '#334155']}
+      style={styles.container}
+    >
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor="#14b8a6"
+          />
+        }
+      >
+        <View style={styles.header}>
+          <View style={styles.titleContainer}>
+            <Ionicons name="sparkles" size={32} color="#14b8a6" />
+            <Text style={styles.title}>Gemini Projects</Text>
+          </View>
+
+          <TouchableOpacity onPress={handleSettingsPress} style={styles.settingsButton}>
+            <Ionicons name="settings-outline" size={24} color="#14b8a6" />
           </TouchableOpacity>
         </View>
-        <Button
-          mode="contained"
-          onPress={() => setShowNewProjectModal(true)}
-          style={styles.newProjectButton}
-          icon="plus"
-        >
-          New Project
-        </Button>
-      </View>
 
-      <FlatList
-        data={projects}
-        renderItem={renderProject}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.projectsList}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <Ionicons name="folder-outline" size={48} color="#64748b" />
-            <Text style={styles.emptyTitle}>No projects yet</Text>
-            <Text style={styles.emptySubtitle}>
-              Create your first project to get started
-            </Text>
-          </View>
-        }
-      />
+        <View style={styles.actions}>
+          <LiquidGlassButton
+            onPress={() => setShowNewProjectModal(true)}
+            title="New Project"
+            style={styles.newProjectButton}
+          />
+        </View>
+
+        <View style={styles.projectsList}>
+          {projects.length === 0 ? (
+            <LiquidGlassCard style={styles.emptyCard}>
+              <Ionicons name="folder-outline" size={48} color="rgba(255, 255, 255, 0.3)" />
+              <Text style={styles.emptyText}>No projects yet</Text>
+              <Text style={styles.emptySubtext}>
+                Create your first project to get started with Gemini
+              </Text>
+            </LiquidGlassCard>
+          ) : (
+            projects.map((project) => (
+              <LiquidGlassCard
+                key={project.id}
+                pressable
+                onPress={() => handleProjectPress(project)}
+                style={styles.projectCard}
+              >
+                <View style={styles.projectContent}>
+                  <View style={styles.projectHeader}>
+                    <Ionicons name="folder" size={24} color="#14b8a6" />
+                    <Text style={styles.projectName}>{project.name}</Text>
+                  </View>
+
+                  <Text style={styles.projectDate}>
+                    Created {new Date(project.createdAt).toLocaleDateString()}
+                  </Text>
+
+                  <View style={styles.projectActions}>
+                    <TouchableOpacity
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        handleDeleteProject(project.id, project.name);
+                      }}
+                      style={styles.deleteButton}
+                    >
+                      <Ionicons name="trash-outline" size={20} color="#ef4444" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </LiquidGlassCard>
+            ))
+          )}
+        </View>
+      </ScrollView>
 
       <Modal
         visible={showNewProjectModal}
-        animationType="slide"
-        presentationStyle="pageSheet"
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowNewProjectModal(false)}
       >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
+        <View style={styles.modalOverlay}>
+          <LiquidGlassCard style={styles.modalCard}>
             <Text style={styles.modalTitle}>New Project</Text>
-            <TouchableOpacity onPress={() => setShowNewProjectModal(false)}>
-              <Ionicons name="close" size={24} color="#64748b" />
-            </TouchableOpacity>
-          </View>
 
-          <View style={styles.modalContent}>
-            <Text style={styles.inputLabel}>Project Name *</Text>
-            <TextInput
-              style={styles.input}
+            <LiquidGlassInput
+              containerStyle={styles.modalInput}
+              placeholder="Project name"
               value={newProjectName}
               onChangeText={setNewProjectName}
-              placeholder="my-project"
-              placeholderTextColor="#64748b"
-              autoCapitalize="none"
+              autoFocus
             />
 
-            <Text style={styles.inputLabel}>Display Name</Text>
-            <TextInput
-              style={styles.input}
-              value={newProjectDisplayName}
-              onChangeText={setNewProjectDisplayName}
-              placeholder="My Project"
-              placeholderTextColor="#64748b"
-            />
-
-            <Button
-              mode="contained"
-              onPress={createProject}
-              loading={creatingProject}
-              disabled={creatingProject || !newProjectName.trim()}
-              style={styles.createButton}
-            >
-              Create Project
-            </Button>
-          </View>
+            <View style={styles.modalButtons}>
+              <LiquidGlassButton
+                onPress={() => {
+                  setShowNewProjectModal(false);
+                  setNewProjectName('');
+                }}
+                title="Cancel"
+                variant="secondary"
+                style={styles.modalButton}
+              />
+              <LiquidGlassButton
+                onPress={handleCreateProject}
+                title={creatingProject ? 'Creating...' : 'Create'}
+                loading={creatingProject}
+                disabled={!newProjectName.trim() || creatingProject}
+                style={styles.modalButton}
+              />
+            </View>
+          </LiquidGlassCard>
         </View>
       </Modal>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
   },
-  loadingContainer: {
+  scrollView: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#0f172a',
   },
-  loadingText: {
-    color: '#94a3b8',
-    fontSize: 16,
+  scrollContent: {
+    padding: 16,
+    paddingTop: 100,
   },
   header: {
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
-  },
-  headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 24,
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   title: {
+    color: '#fff',
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#fff',
   },
-  signOutButton: {
+  settingsButton: {
     padding: 8,
   },
+  actions: {
+    marginBottom: 24,
+  },
   newProjectButton: {
-    backgroundColor: '#3b82f6',
+    width: '100%',
   },
   projectsList: {
-    padding: 20,
+    gap: 16,
   },
   projectCard: {
-    backgroundColor: '#1e293b',
-    padding: 20,
-    borderRadius: 12,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#334155',
+    marginBottom: 16,
+  },
+  projectContent: {
+    gap: 8,
   },
   projectHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    gap: 12,
   },
   projectName: {
+    color: '#fff',
     fontSize: 18,
     fontWeight: '600',
-    color: '#fff',
-  },
-  projectDetails: {
-    color: '#64748b',
-    fontSize: 14,
-    marginBottom: 4,
+    flex: 1,
   },
   projectDate: {
-    color: '#64748b',
-    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 14,
   },
-  emptyState: {
+  projectActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 8,
+  },
+  deleteButton: {
+    padding: 8,
+  },
+  emptyCard: {
     alignItems: 'center',
-    paddingVertical: 60,
+    padding: 32,
   },
-  emptyTitle: {
+  emptyText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',
     marginTop: 16,
-    marginBottom: 8,
   },
-  emptySubtitle: {
-    color: '#64748b',
+  emptySubtext: {
+    color: 'rgba(255, 255, 255, 0.6)',
     fontSize: 14,
     textAlign: 'center',
+    marginTop: 8,
   },
-  modalContainer: {
+  modalOverlay: {
     flex: 1,
-    backgroundColor: '#0f172a',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
+    padding: 24,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 400,
+    padding: 24,
   },
   modalTitle: {
-    fontSize: 20,
-    fontWeight: '600',
     color: '#fff',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 24,
   },
-  modalContent: {
-    padding: 20,
+  modalInput: {
+    marginBottom: 24,
   },
-  inputLabel: {
-    color: '#e2e8f0',
-    fontSize: 16,
-    fontWeight: '500',
-    marginBottom: 8,
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
   },
-  input: {
-    backgroundColor: '#1e293b',
-    borderWidth: 1,
-    borderColor: '#334155',
-    borderRadius: 8,
-    padding: 16,
-    color: '#fff',
-    fontSize: 16,
-    marginBottom: 20,
-  },
-  createButton: {
-    backgroundColor: '#3b82f6',
+  modalButton: {
+    flex: 1,
   },
 });
