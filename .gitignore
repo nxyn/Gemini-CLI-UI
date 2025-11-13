@@ -101,6 +101,10 @@ temp/
 # Claude specific
 .claude/
 
+# Expo
+.expo/
+/android
+
 # Database files
 *.db
 *.sqlite
