@@ -29,20 +29,13 @@
       },
       "package": "com.chlorocode.app",
       "versionCode": 2,
-      "compileSdkVersion": 35,
-      "targetSdkVersion": 35,
-      "minSdkVersion": 23,
       "permissions": [
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE"
       ],
-      "blockNetworkRequests": false,
-      "jsEngine": "hermes",
-      "hermesFlags": [
-        "-Xgc-max-heap-size=2048M"
-      ]
+      "jsEngine": "hermes"
     },
     "web": {
       "favicon": "./assets/favicon.png",
