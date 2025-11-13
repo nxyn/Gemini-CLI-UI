@@ -18,6 +18,8 @@ import CodeEditorScreen from './src/screens/CodeEditorScreen';
 // Import services
 import { geminiStorage } from './src/services/geminiStorage';
 import { geminiApi } from './src/services/geminiApi';
+import { notificationService } from './src/services/notificationService';
+import { backgroundTaskService } from './src/services/backgroundTaskService';
 
 // Import theme
 import { Colors, Typography } from './src/constants/theme';
@@ -38,6 +40,22 @@ export default function App() {
       // Initialize storage and API services
       await geminiStorage.initialize();
       await geminiApi.initialize();
+
+      // Initialize notification service
+      const notificationInitialized = await notificationService.initialize();
+      if (notificationInitialized) {
+        console.log('Notifications enabled');
+      } else {
+        console.log('Notifications disabled');
+      }
+
+      // Initialize background task service
+      const backgroundInitialized = await backgroundTaskService.initialize();
+      if (backgroundInitialized) {
+        console.log('Background tasks enabled');
+      } else {
+        console.log('Background tasks disabled');
+      }
 
       console.log('App initialized successfully');
     } catch (error) {

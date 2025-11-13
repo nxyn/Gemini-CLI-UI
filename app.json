@@ -17,7 +17,13 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.chlorocode.app",
       "jsEngine": "hermes",
-      "buildNumber": "2.0.0"
+      "buildNumber": "2.0.0",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "fetch",
+          "remote-notification"
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -34,7 +40,11 @@
         "android.permission.ACCESS_NETWORK_STATE",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.MANAGE_EXTERNAL_STORAGE"
+        "android.permission.MANAGE_EXTERNAL_STORAGE",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.WAKE_LOCK",
+        "android.permission.RECEIVE_BOOT_COMPLETED"
       ],
       "blockNetworkRequests": false,
       "jsEngine": "hermes",
@@ -49,7 +59,21 @@
       "theme": "dark"
     },
     "plugins": [
-      "expo-router"
-    ]
+      "expo-router",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#00ff88",
+          "sounds": ["./assets/notification.wav"]
+        }
+      ]
+    ],
+    "notification": {
+      "icon": "./assets/icon.png",
+      "color": "#00ff88",
+      "androidMode": "default",
+      "androidCollapsedTitle": "Chloro Code"
+    }
   }
 }
