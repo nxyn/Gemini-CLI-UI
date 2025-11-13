@@ -12,8 +12,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { LiquidGlassCard, LiquidGlassButton, LiquidGlassInput } from '../components/liquid';
-import { AnimatedBackground } from '../components/animated/AnimatedBackground';
-import { GlowingGreenAccent } from '../components/animated/GlowingGreenAccent';
+import { AnimatedBackground, GlowingGreenAccent, FadeInView, ScaleInView } from '../components/animated';
 import { geminiStorage, GeminiProject } from '../services/geminiStorage';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -136,7 +135,7 @@ export default function ProjectsScreen({ navigation }: ProjectsScreenProps) {
           />
         }
       >
-        <View style={styles.header}>
+        <FadeInView from="top" delay={0} style={styles.header}>
           <View style={styles.titleContainer}>
             <GlowingGreenAccent size={40} intensity="high" speed="normal" />
             <View style={styles.titleTextContainer}>
@@ -148,34 +147,36 @@ export default function ProjectsScreen({ navigation }: ProjectsScreenProps) {
           <TouchableOpacity onPress={handleSettingsPress} style={styles.settingsButton}>
             <Ionicons name="settings-outline" size={24} color={Colors.chloro.primary} />
           </TouchableOpacity>
-        </View>
+        </FadeInView>
 
-        <View style={styles.actions}>
+        <FadeInView from="bottom" delay={100} style={styles.actions}>
           <LiquidGlassButton
             onPress={() => setShowNewProjectModal(true)}
             title="New Project"
             style={styles.newProjectButton}
           />
-        </View>
+        </FadeInView>
 
         <View style={styles.projectsList}>
           {projects.length === 0 ? (
-            <LiquidGlassCard style={styles.emptyCard}>
-              <Ionicons name="folder-outline" size={48} color={Colors.chloro.dim} />
-              <Text style={styles.emptyText}>No projects yet</Text>
-              <Text style={styles.emptySubtext}>
-                Create your first project to get started with Chloro Code
-              </Text>
-            </LiquidGlassCard>
+            <ScaleInView delay={200}>
+              <LiquidGlassCard style={styles.emptyCard}>
+                <Ionicons name="folder-outline" size={48} color={Colors.chloro.dim} />
+                <Text style={styles.emptyText}>No projects yet</Text>
+                <Text style={styles.emptySubtext}>
+                  Create your first project to get started with Chloro Code
+                </Text>
+              </LiquidGlassCard>
+            </ScaleInView>
           ) : (
-            projects.map((project) => (
-              <LiquidGlassCard
-                key={project.id}
-                pressable
-                onPress={() => handleProjectPress(project)}
-                style={styles.projectCard}
-                glowEffect
-              >
+            projects.map((project, index) => (
+              <FadeInView key={project.id} from="bottom" delay={200 + index * 50}>
+                <LiquidGlassCard
+                  pressable
+                  onPress={() => handleProjectPress(project)}
+                  style={styles.projectCard}
+                  glowEffect
+                >
                 <View style={styles.projectContent}>
                   <View style={styles.projectHeader}>
                     <Ionicons name="folder" size={24} color={Colors.chloro.primary} />
@@ -199,6 +200,7 @@ export default function ProjectsScreen({ navigation }: ProjectsScreenProps) {
                   </View>
                 </View>
               </LiquidGlassCard>
+              </FadeInView>
             ))
           )}
         </View>
@@ -211,11 +213,12 @@ export default function ProjectsScreen({ navigation }: ProjectsScreenProps) {
         onRequestClose={() => setShowNewProjectModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <LiquidGlassCard style={styles.modalCard} glowEffect>
-            <View style={styles.modalHeader}>
-              <GlowingGreenAccent size={32} intensity="high" speed="fast" />
-              <Text style={styles.modalTitle}>New Project</Text>
-            </View>
+          <ScaleInView delay={0} initialScale={0.9}>
+            <LiquidGlassCard style={styles.modalCard} glowEffect>
+              <View style={styles.modalHeader}>
+                <GlowingGreenAccent size={32} intensity="high" speed="fast" />
+                <Text style={styles.modalTitle}>New Project</Text>
+              </View>
 
             <LiquidGlassInput
               containerStyle={styles.modalInput}
@@ -244,6 +247,7 @@ export default function ProjectsScreen({ navigation }: ProjectsScreenProps) {
               />
             </View>
           </LiquidGlassCard>
+          </ScaleInView>
         </View>
       </Modal>
     </View>

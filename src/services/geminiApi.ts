@@ -1,9 +1,17 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { geminiStorage, GeminiMessage } from './geminiStorage';
+import { notificationService } from './notificationService';
+import { backgroundTaskService } from './backgroundTaskService';
 
 export interface GeminiConfig {
   apiKey: string;
   model: string;
+}
+
+export interface SendMessageOptions {
+  enableNotifications?: boolean;
+  enableBackground?: boolean;
+  projectName?: string;
 }
 
 class GeminiApiService {
@@ -67,11 +75,14 @@ class GeminiApiService {
     projectId: string,
     sessionId: string,
     message: string,
-    images?: string[]
+    images?: string[],
+    options?: SendMessageOptions
   ): Promise<AsyncGenerator<string, void, unknown>> {
     if (!this.apiKey) {
       throw new Error('API key not set. Please configure your Gemini API key in settings.');
     }
+
+    const { enableNotifications = true, enableBackground = true, projectName } = options || {};
 
     // Add user message to storage
     await geminiStorage.addMessage(projectId, sessionId, {
@@ -86,11 +97,34 @@ class GeminiApiService {
       throw new Error('Session not found');
     }
 
+    // Create background task if enabled
+    let taskId: string | null = null;
+    if (enableBackground) {
+      taskId = `task_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+      await backgroundTaskService.addTask({
+        id: taskId,
+        projectId,
+        sessionId,
+        message,
+        startTime: Date.now(),
+        status: 'running',
+        projectName,
+      });
+    }
+
+    // Show start notification if enabled
+    if (enableNotifications) {
+      await notificationService.notifyTaskStart(
+        message.substring(0, 50) + (message.length > 50 ? '...' : ''),
+        projectName
+      );
+    }
+
     // Build contents for API request
     const contents = this.buildContents(session.messages);
 
-    // Make API request with streaming
-    return this.streamGeneration(contents);
+    // Make API request with streaming and track progress
+    return this.streamGenerationWithTracking(contents, taskId, message, projectName, enableNotifications);
   }
 
   /**
@@ -132,6 +166,53 @@ class GeminiApiService {
     }
 
     return contents;
+  }
+
+  /**
+   * Stream generation with background task tracking
+   */
+  private async *streamGenerationWithTracking(
+    contents: any[],
+    taskId: string | null,
+    message: string,
+    projectName: string | undefined,
+    enableNotifications: boolean
+  ): AsyncGenerator<string, void, unknown> {
+    try {
+      // Stream the generation
+      for await (const chunk of this.streamGeneration(contents)) {
+        yield chunk;
+      }
+
+      // Task completed successfully
+      if (taskId) {
+        await backgroundTaskService.updateTaskStatus(taskId, 'completed');
+        await backgroundTaskService.removeTask(taskId);
+      }
+
+      if (enableNotifications) {
+        await notificationService.notifyTaskComplete(
+          message.substring(0, 50) + (message.length > 50 ? '...' : ''),
+          projectName
+        );
+      }
+    } catch (error) {
+      // Task failed
+      if (taskId) {
+        await backgroundTaskService.updateTaskStatus(taskId, 'error');
+        await backgroundTaskService.removeTask(taskId);
+      }
+
+      if (enableNotifications) {
+        await notificationService.notifyTaskError(
+          message.substring(0, 50) + (message.length > 50 ? '...' : ''),
+          error instanceof Error ? error.message : 'Unknown error',
+          projectName
+        );
+      }
+
+      throw error;
+    }
   }
 
   /**

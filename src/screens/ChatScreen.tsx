@@ -11,8 +11,7 @@ import {
   Image,
 } from 'react-native';
 import { LiquidGlassCard, LiquidGlassInput, LiquidGlassButton } from '../components/liquid';
-import { AnimatedBackground } from '../components/animated/AnimatedBackground';
-import { GlowingGreenAccent } from '../components/animated/GlowingGreenAccent';
+import { AnimatedBackground, GlowingGreenAccent, FadeInView } from '../components/animated';
 import { Colors, Typography, Spacing, BorderRadius } from '../constants/theme';
 import { geminiApi } from '../services/geminiApi';
 import { geminiStorage, GeminiSession, GeminiMessage } from '../services/geminiStorage';
@@ -35,6 +34,7 @@ export default function ChatScreen({ route, navigation }: ChatScreenProps) {
   const { projectId, sessionId } = route.params;
 
   const [session, setSession] = useState<GeminiSession | null>(null);
+  const [projectName, setProjectName] = useState<string>('');
   const [messages, setMessages] = useState<GeminiMessage[]>([]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -57,6 +57,13 @@ export default function ChatScreen({ route, navigation }: ChatScreenProps) {
       setSession(loadedSession);
       setMessages(loadedSession.messages);
     }
+
+    // Load project name for notifications
+    const projects = await geminiStorage.getProjects();
+    const project = projects.find(p => p.id === projectId);
+    if (project) {
+      setProjectName(project.name);
+    }
   };
 
   const handleSend = async () => {
@@ -70,12 +77,17 @@ export default function ChatScreen({ route, navigation }: ChatScreenProps) {
     setStreamingResponse('');
 
     try {
-      // Stream the response
+      // Stream the response with notifications enabled
       const stream = await geminiApi.sendMessage(
         projectId,
         sessionId,
         userMessage,
-        imagesToSend
+        imagesToSend,
+        {
+          enableNotifications: true,
+          enableBackground: true,
+          projectName: projectName,
+        }
       );
 
       let fullResponse = '';
@@ -131,12 +143,15 @@ export default function ChatScreen({ route, navigation }: ChatScreenProps) {
     setSelectedImages(selectedImages.filter((_, i) => i !== index));
   };
 
-  const renderMessage = (message: GeminiMessage) => {
+  const renderMessage = (message: GeminiMessage, index: number) => {
     const isUser = message.role === 'user';
 
     return (
-      <View
+      <FadeInView
         key={message.id}
+        from={isUser ? 'right' : 'left'}
+        delay={index * 50}
+        distance={20}
         style={[styles.messageContainer, isUser && styles.userMessageContainer]}
       >
         <LiquidGlassCard
@@ -175,7 +190,7 @@ export default function ChatScreen({ route, navigation }: ChatScreenProps) {
             {new Date(message.timestamp).toLocaleTimeString()}
           </Text>
         </LiquidGlassCard>
-      </View>
+      </FadeInView>
     );
   };
 
