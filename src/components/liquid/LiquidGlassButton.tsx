@@ -10,6 +10,7 @@ import {
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
+import { Colors, BorderRadius, Typography, Shadow } from '../../constants/theme';
 
 interface LiquidGlassButtonProps {
   onPress: () => void;
@@ -42,13 +43,26 @@ export const LiquidGlassButton: React.FC<LiquidGlassButtonProps> = ({
   const getGradientColors = () => {
     switch (variant) {
       case 'primary':
-        return ['rgba(20, 184, 166, 0.4)', 'rgba(14, 165, 233, 0.4)'];
+        return [
+          Colors.chloro.primary + '66',
+          Colors.chloro.secondary + '66',
+          Colors.chloro.tertiary + '66',
+        ];
       case 'secondary':
-        return ['rgba(100, 116, 139, 0.4)', 'rgba(71, 85, 105, 0.4)'];
+        return [
+          Colors.glass.medium,
+          Colors.glass.light,
+        ];
       case 'danger':
-        return ['rgba(239, 68, 68, 0.4)', 'rgba(220, 38, 38, 0.4)'];
+        return [
+          Colors.semantic.error + '66',
+          Colors.semantic.error + '44',
+        ];
       default:
-        return ['rgba(20, 184, 166, 0.4)', 'rgba(14, 165, 233, 0.4)'];
+        return [
+          Colors.chloro.primary + '66',
+          Colors.chloro.secondary + '66',
+        ];
     }
   };
 
@@ -58,12 +72,13 @@ export const LiquidGlassButton: React.FC<LiquidGlassButtonProps> = ({
       disabled={disabled || loading}
       style={[
         styles.container,
+        variant === 'primary' && styles.primaryContainer,
         style,
         (disabled || loading) && styles.disabled,
       ]}
       activeOpacity={0.7}
     >
-      <BlurView intensity={60} tint="dark" style={styles.blur}>
+      <BlurView intensity={80} tint="dark" style={styles.blur}>
         <LinearGradient
           colors={getGradientColors()}
           start={{ x: 0, y: 0 }}
@@ -71,7 +86,7 @@ export const LiquidGlassButton: React.FC<LiquidGlassButtonProps> = ({
           style={styles.gradient}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={Colors.chloro.primary} />
           ) : (
             <Text style={[styles.text, textStyle]}>{title}</Text>
           )}
@@ -84,10 +99,14 @@ export const LiquidGlassButton: React.FC<LiquidGlassButtonProps> = ({
 const styles = StyleSheet.create({
   container: {
     overflow: 'hidden',
-    borderRadius: 16,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: Colors.ui.border,
     minHeight: 48,
+    backgroundColor: Colors.background.tertiary,
+  },
+  primaryContainer: {
+    ...Shadow.medium,
   },
   blur: {
     flex: 1,
@@ -101,9 +120,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   text: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    color: Colors.text.primary,
+    fontSize: Typography.fontSize.lg,
+    fontWeight: Typography.fontWeight.semibold,
   },
   disabled: {
     opacity: 0.5,

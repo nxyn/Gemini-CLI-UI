@@ -10,8 +10,10 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { LiquidGlassCard, LiquidGlassInput, LiquidGlassButton } from '../components/liquid';
+import { AnimatedBackground } from '../components/animated/AnimatedBackground';
+import { GlowingGreenAccent } from '../components/animated/GlowingGreenAccent';
+import { Colors, Typography, Spacing, BorderRadius } from '../constants/theme';
 import { geminiApi } from '../services/geminiApi';
 import { geminiStorage, GeminiSession, GeminiMessage } from '../services/geminiStorage';
 import Markdown from 'react-native-markdown-display';
@@ -147,7 +149,7 @@ export default function ChatScreen({ route, navigation }: ChatScreenProps) {
             <Ionicons
               name={isUser ? 'person' : 'sparkles'}
               size={16}
-              color={isUser ? '#14b8a6' : '#3b82f6'}
+              color={isUser ? Colors.chloro.primary : Colors.semantic.info}
             />
             <Text style={styles.messageRole}>
               {isUser ? 'You' : 'Gemini'}
@@ -178,10 +180,8 @@ export default function ChatScreen({ route, navigation }: ChatScreenProps) {
   };
 
   return (
-    <LinearGradient
-      colors={['#0f172a', '#1e293b', '#334155']}
-      style={styles.container}
-    >
+    <View style={styles.container}>
+      <AnimatedBackground />
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -198,9 +198,9 @@ export default function ChatScreen({ route, navigation }: ChatScreenProps) {
             <View style={styles.messageContainer}>
               <LiquidGlassCard style={[styles.messageCard, styles.assistantMessage]}>
                 <View style={styles.messageHeader}>
-                  <Ionicons name="sparkles" size={16} color="#3b82f6" />
+                  <Ionicons name="sparkles" size={16} color={Colors.semantic.info} />
                   <Text style={styles.messageRole}>Gemini</Text>
-                  <ActivityIndicator size="small" color="#3b82f6" style={styles.streamingIndicator} />
+                  <ActivityIndicator size="small" color={Colors.semantic.info} style={styles.streamingIndicator} />
                 </View>
                 <Markdown style={markdownStyles}>{streamingResponse}</Markdown>
               </LiquidGlassCard>
@@ -226,7 +226,7 @@ export default function ChatScreen({ route, navigation }: ChatScreenProps) {
                     style={styles.removeImageButton}
                     onPress={() => removeImage(idx)}
                   >
-                    <Ionicons name="close-circle" size={24} color="#ef4444" />
+                    <Ionicons name="close-circle" size={24} color={Colors.semantic.error} />
                   </TouchableOpacity>
                 </View>
               ))}
@@ -239,7 +239,7 @@ export default function ChatScreen({ route, navigation }: ChatScreenProps) {
               onPress={handlePickImage}
               disabled={loading}
             >
-              <Ionicons name="image" size={24} color="#14b8a6" />
+              <Ionicons name="image" size={24} color={Colors.chloro.primary} />
             </TouchableOpacity>
 
             <LiquidGlassInput
@@ -264,7 +264,7 @@ export default function ChatScreen({ route, navigation }: ChatScreenProps) {
           </View>
         </View>
       </KeyboardAvoidingView>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -276,10 +276,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   messagesContent: {
-    padding: 16,
+    padding: Spacing.lg,
   },
   messageContainer: {
-    marginBottom: 12,
+    marginBottom: Spacing.md,
   },
   userMessageContainer: {
     alignItems: 'flex-end',
@@ -296,42 +296,42 @@ const styles = StyleSheet.create({
   messageHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: Spacing.sm,
   },
   messageRole: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
+    color: Colors.text.primary,
+    fontSize: Typography.fontSize.md,
+    fontWeight: Typography.fontWeight.semibold,
     marginLeft: 6,
   },
   streamingIndicator: {
-    marginLeft: 8,
+    marginLeft: Spacing.sm,
   },
   imagesContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginBottom: 8,
-    gap: 8,
+    marginBottom: Spacing.sm,
+    gap: Spacing.sm,
   },
   messageImage: {
     width: 100,
     height: 100,
-    borderRadius: 8,
+    borderRadius: Spacing.sm,
   },
   timestamp: {
-    color: 'rgba(255, 255, 255, 0.5)',
-    fontSize: 12,
-    marginTop: 8,
+    color: Colors.text.tertiary,
+    fontSize: Typography.fontSize.sm,
+    marginTop: Spacing.sm,
   },
   inputContainer: {
-    padding: 16,
-    paddingBottom: Platform.OS === 'ios' ? 32 : 16,
+    padding: Spacing.lg,
+    paddingBottom: Platform.OS === 'ios' ? 32 : Spacing.lg,
   },
   selectedImagesContainer: {
-    marginBottom: 12,
+    marginBottom: Spacing.md,
   },
   selectedImagesContent: {
-    gap: 8,
+    gap: Spacing.sm,
   },
   selectedImageWrapper: {
     position: 'relative',
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
   selectedImage: {
     width: 80,
     height: 80,
-    borderRadius: 8,
+    borderRadius: Spacing.sm,
   },
   removeImageButton: {
     position: 'absolute',
@@ -349,10 +349,10 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    gap: 8,
+    gap: Spacing.sm,
   },
   attachButton: {
-    padding: 12,
+    padding: Spacing.md,
   },
   input: {
     flex: 1,
@@ -368,13 +368,13 @@ const styles = StyleSheet.create({
 
 const markdownStyles = {
   body: {
-    color: '#fff',
+    color: Colors.text.primary,
     fontSize: 15,
     lineHeight: 22,
   },
   code_inline: {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    color: '#14b8a6',
+    color: Colors.chloro.primary,
     paddingHorizontal: 4,
     paddingVertical: 2,
     borderRadius: 4,
@@ -382,33 +382,33 @@ const markdownStyles = {
   },
   code_block: {
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    padding: 12,
-    borderRadius: 8,
+    padding: Spacing.md,
+    borderRadius: Spacing.sm,
     fontFamily: 'monospace',
-    color: '#e5e7eb',
+    color: Colors.text.secondary,
   },
   fence: {
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    padding: 12,
-    borderRadius: 8,
+    padding: Spacing.md,
+    borderRadius: Spacing.sm,
     fontFamily: 'monospace',
-    color: '#e5e7eb',
+    color: Colors.text.secondary,
   },
   link: {
-    color: '#3b82f6',
+    color: Colors.semantic.info,
   },
   heading1: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginTop: 16,
-    marginBottom: 8,
+    color: Colors.text.primary,
+    fontSize: Typography.fontSize.xxxl,
+    fontWeight: Typography.fontWeight.bold,
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.sm,
   },
   heading2: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginTop: 12,
+    color: Colors.text.primary,
+    fontSize: Typography.fontSize.xxl,
+    fontWeight: Typography.fontWeight.bold,
+    marginTop: Spacing.md,
     marginBottom: 6,
   },
 };
