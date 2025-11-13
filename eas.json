@@ -5,7 +5,10 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "gradleCommand": ":app:assembleDebug"
+      }
     },
     "preview": {
       "distribution": "internal",
@@ -16,6 +19,11 @@
     "production": {
       "android": {
         "buildType": "apk"
+      }
+    },
+    "production-aab": {
+      "android": {
+        "buildType": "app-bundle"
       }
     }
   },

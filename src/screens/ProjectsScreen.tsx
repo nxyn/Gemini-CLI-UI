@@ -12,9 +12,12 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { LiquidGlassCard, LiquidGlassButton, LiquidGlassInput } from '../components/liquid';
+import { AnimatedBackground } from '../components/animated/AnimatedBackground';
+import { GlowingGreenAccent } from '../components/animated/GlowingGreenAccent';
 import { geminiStorage, GeminiProject } from '../services/geminiStorage';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { Colors, Typography, Spacing } from '../constants/theme';
 
 interface ProjectsScreenProps {
   navigation: any;
@@ -120,10 +123,8 @@ export default function ProjectsScreen({ navigation }: ProjectsScreenProps) {
   };
 
   return (
-    <LinearGradient
-      colors={['#0f172a', '#1e293b', '#334155']}
-      style={styles.container}
-    >
+    <View style={styles.container}>
+      <AnimatedBackground />
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -131,18 +132,21 @@ export default function ProjectsScreen({ navigation }: ProjectsScreenProps) {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            tintColor="#14b8a6"
+            tintColor={Colors.chloro.primary}
           />
         }
       >
         <View style={styles.header}>
           <View style={styles.titleContainer}>
-            <Ionicons name="sparkles" size={32} color="#14b8a6" />
-            <Text style={styles.title}>Gemini Projects</Text>
+            <GlowingGreenAccent size={40} intensity="high" speed="normal" />
+            <View style={styles.titleTextContainer}>
+              <Text style={styles.title}>Chloro Code</Text>
+              <Text style={styles.subtitle}>Projects</Text>
+            </View>
           </View>
 
           <TouchableOpacity onPress={handleSettingsPress} style={styles.settingsButton}>
-            <Ionicons name="settings-outline" size={24} color="#14b8a6" />
+            <Ionicons name="settings-outline" size={24} color={Colors.chloro.primary} />
           </TouchableOpacity>
         </View>
 
@@ -157,10 +161,10 @@ export default function ProjectsScreen({ navigation }: ProjectsScreenProps) {
         <View style={styles.projectsList}>
           {projects.length === 0 ? (
             <LiquidGlassCard style={styles.emptyCard}>
-              <Ionicons name="folder-outline" size={48} color="rgba(255, 255, 255, 0.3)" />
+              <Ionicons name="folder-outline" size={48} color={Colors.chloro.dim} />
               <Text style={styles.emptyText}>No projects yet</Text>
               <Text style={styles.emptySubtext}>
-                Create your first project to get started with Gemini
+                Create your first project to get started with Chloro Code
               </Text>
             </LiquidGlassCard>
           ) : (
@@ -170,10 +174,11 @@ export default function ProjectsScreen({ navigation }: ProjectsScreenProps) {
                 pressable
                 onPress={() => handleProjectPress(project)}
                 style={styles.projectCard}
+                glowEffect
               >
                 <View style={styles.projectContent}>
                   <View style={styles.projectHeader}>
-                    <Ionicons name="folder" size={24} color="#14b8a6" />
+                    <Ionicons name="folder" size={24} color={Colors.chloro.primary} />
                     <Text style={styles.projectName}>{project.name}</Text>
                   </View>
 
@@ -189,7 +194,7 @@ export default function ProjectsScreen({ navigation }: ProjectsScreenProps) {
                       }}
                       style={styles.deleteButton}
                     >
-                      <Ionicons name="trash-outline" size={20} color="#ef4444" />
+                      <Ionicons name="trash-outline" size={20} color={Colors.semantic.error} />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -206,8 +211,11 @@ export default function ProjectsScreen({ navigation }: ProjectsScreenProps) {
         onRequestClose={() => setShowNewProjectModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <LiquidGlassCard style={styles.modalCard}>
-            <Text style={styles.modalTitle}>New Project</Text>
+          <LiquidGlassCard style={styles.modalCard} glowEffect>
+            <View style={styles.modalHeader}>
+              <GlowingGreenAccent size={32} intensity="high" speed="fast" />
+              <Text style={styles.modalTitle}>New Project</Text>
+            </View>
 
             <LiquidGlassInput
               containerStyle={styles.modalInput}
@@ -238,118 +246,134 @@ export default function ProjectsScreen({ navigation }: ProjectsScreenProps) {
           </LiquidGlassCard>
         </View>
       </Modal>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: Colors.background.primary,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
+    padding: Spacing.lg,
     paddingTop: 100,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: Spacing.xxl,
   },
   titleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: Spacing.md,
+  },
+  titleTextContainer: {
+    flexDirection: 'column',
   },
   title: {
-    color: '#fff',
-    fontSize: 28,
-    fontWeight: 'bold',
+    color: Colors.text.primary,
+    fontSize: Typography.fontSize.huge,
+    fontWeight: Typography.fontWeight.heavy,
+    letterSpacing: -0.5,
+  },
+  subtitle: {
+    color: Colors.chloro.primary,
+    fontSize: Typography.fontSize.md,
+    fontWeight: Typography.fontWeight.medium,
+    marginTop: -4,
   },
   settingsButton: {
-    padding: 8,
+    padding: Spacing.sm,
   },
   actions: {
-    marginBottom: 24,
+    marginBottom: Spacing.xxl,
   },
   newProjectButton: {
     width: '100%',
   },
   projectsList: {
-    gap: 16,
+    gap: Spacing.lg,
   },
   projectCard: {
-    marginBottom: 16,
+    marginBottom: Spacing.lg,
   },
   projectContent: {
-    gap: 8,
+    gap: Spacing.sm,
   },
   projectHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: Spacing.md,
   },
   projectName: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
+    color: Colors.text.primary,
+    fontSize: Typography.fontSize.xl,
+    fontWeight: Typography.fontWeight.semibold,
     flex: 1,
   },
   projectDate: {
-    color: 'rgba(255, 255, 255, 0.6)',
-    fontSize: 14,
+    color: Colors.text.secondary,
+    fontSize: Typography.fontSize.sm,
   },
   projectActions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginTop: 8,
+    marginTop: Spacing.sm,
   },
   deleteButton: {
-    padding: 8,
+    padding: Spacing.sm,
   },
   emptyCard: {
     alignItems: 'center',
-    padding: 32,
+    padding: Spacing.xxxl,
   },
   emptyText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-    marginTop: 16,
+    color: Colors.text.primary,
+    fontSize: Typography.fontSize.xl,
+    fontWeight: Typography.fontWeight.semibold,
+    marginTop: Spacing.lg,
   },
   emptySubtext: {
-    color: 'rgba(255, 255, 255, 0.6)',
-    fontSize: 14,
+    color: Colors.text.secondary,
+    fontSize: Typography.fontSize.md,
     textAlign: 'center',
-    marginTop: 8,
+    marginTop: Spacing.sm,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: Colors.ui.overlay,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    padding: Spacing.xxl,
   },
   modalCard: {
     width: '100%',
     maxWidth: 400,
-    padding: 24,
+    padding: Spacing.xxl,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    marginBottom: Spacing.xxl,
   },
   modalTitle: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 24,
+    color: Colors.text.primary,
+    fontSize: Typography.fontSize.xxxl,
+    fontWeight: Typography.fontWeight.bold,
   },
   modalInput: {
-    marginBottom: 24,
+    marginBottom: Spacing.xxl,
   },
   modalButtons: {
     flexDirection: 'row',
-    gap: 12,
+    gap: Spacing.md,
   },
   modalButton: {
     flex: 1,

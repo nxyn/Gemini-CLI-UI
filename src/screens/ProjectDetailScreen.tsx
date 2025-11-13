@@ -12,6 +12,9 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { Button } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
+import { AnimatedBackground } from '../components/animated/AnimatedBackground';
+import { GlowingGreenAccent } from '../components/animated/GlowingGreenAccent';
+import { Colors, Typography, Spacing, BorderRadius } from '../constants/theme';
 import { supabase } from '../utils/supabase';
 
 interface Session {
@@ -105,7 +108,7 @@ export default function ProjectDetailScreen() {
         <Text style={styles.sessionTitle} numberOfLines={1}>
           {item.title}
         </Text>
-        <Ionicons name="chevron-forward" size={16} color="#64748b" />
+        <Ionicons name="chevron-forward" size={16} color={Colors.text.tertiary} />
       </View>
       <Text style={styles.sessionDetails}>
         {item.message_count} message{item.message_count !== 1 ? 's' : ''}
@@ -126,6 +129,7 @@ export default function ProjectDetailScreen() {
 
   return (
     <View style={styles.container}>
+      <AnimatedBackground />
       <View style={styles.header}>
         <Text style={styles.title}>{projectName}</Text>
         <View style={styles.headerButtons}>
@@ -156,7 +160,7 @@ export default function ProjectDetailScreen() {
         contentContainerStyle={styles.sessionsList}
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Ionicons name="chatbubble-outline" size={48} color="#64748b" />
+            <Ionicons name="chatbubble-outline" size={48} color={Colors.text.tertiary} />
             <Text style={styles.emptyTitle}>No chat sessions yet</Text>
             <Text style={styles.emptySubtitle}>
               Start a new conversation to get started
@@ -178,7 +182,7 @@ export default function ProjectDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: Colors.background.primary,
   },
   loadingContainer: {
     flex: 1,
@@ -186,80 +190,80 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    color: '#94a3b8',
-    fontSize: 16,
+    color: Colors.text.secondary,
+    fontSize: Typography.fontSize.lg,
   },
   header: {
-    padding: 20,
+    padding: Spacing.xl,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
+    borderBottomColor: Colors.ui.border,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 16,
+    fontSize: Typography.fontSize.xxxl,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.text.primary,
+    marginBottom: Spacing.lg,
   },
   headerButtons: {
     flexDirection: 'row',
-    gap: 12,
+    gap: Spacing.md,
   },
   filesButton: {
-    borderColor: '#3b82f6',
+    borderColor: Colors.chloro.primary,
   },
   newChatButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: Colors.chloro.primary,
   },
   sessionsList: {
-    padding: 20,
+    padding: Spacing.xl,
   },
   sessionCard: {
-    backgroundColor: '#1e293b',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
+    backgroundColor: Colors.background.secondary,
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.md,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: Colors.ui.border,
   },
   sessionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: Spacing.sm,
   },
   sessionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
+    fontSize: Typography.fontSize.lg,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.text.primary,
     flex: 1,
   },
   sessionDetails: {
-    color: '#64748b',
-    fontSize: 14,
+    color: Colors.text.secondary,
+    fontSize: Typography.fontSize.md,
     marginBottom: 4,
   },
   sessionDate: {
-    color: '#64748b',
-    fontSize: 12,
+    color: Colors.text.secondary,
+    fontSize: Typography.fontSize.sm,
   },
   emptyState: {
     alignItems: 'center',
     paddingVertical: 60,
   },
   emptyTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-    marginTop: 16,
-    marginBottom: 8,
+    color: Colors.text.primary,
+    fontSize: Typography.fontSize.xl,
+    fontWeight: Typography.fontWeight.semibold,
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.sm,
   },
   emptySubtitle: {
-    color: '#64748b',
-    fontSize: 14,
+    color: Colors.text.secondary,
+    fontSize: Typography.fontSize.md,
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: Spacing.xxl,
   },
   startChatButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: Colors.chloro.primary,
   },
 });

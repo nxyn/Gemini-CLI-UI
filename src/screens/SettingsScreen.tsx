@@ -12,6 +12,9 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
+import { AnimatedBackground } from '../components/animated/AnimatedBackground';
+import { GlowingGreenAccent } from '../components/animated/GlowingGreenAccent';
+import { Colors, Typography, Spacing, BorderRadius } from '../constants/theme';
 
 type RootStackParamList = {
   Settings: undefined;
@@ -81,9 +84,13 @@ export default function SettingsScreen() {
 
   return (
     <View style={styles.container}>
+      <AnimatedBackground />
       <ScrollView style={styles.scrollView}>
         <View style={styles.header}>
-          <Text style={styles.title}>Settings</Text>
+          <View style={styles.titleContainer}>
+            <GlowingGreenAccent size={32} intensity="high" speed="normal" />
+            <Text style={styles.title}>Settings</Text>
+          </View>
         </View>
 
         <View style={styles.section}>
@@ -95,13 +102,13 @@ export default function SettingsScreen() {
               onPress={option.onPress}
             >
               <View style={styles.settingLeft}>
-                <Ionicons name={option.icon as any} size={24} color="#64748b" />
+                <Ionicons name={option.icon as any} size={24} color={Colors.text.tertiary} />
                 <View style={styles.settingText}>
                   <Text style={styles.settingTitle}>{option.title}</Text>
                   <Text style={styles.settingSubtitle}>{option.subtitle}</Text>
                 </View>
               </View>
-              <Ionicons name="chevron-forward" size={20} color="#64748b" />
+              <Ionicons name="chevron-forward" size={20} color={Colors.text.tertiary} />
             </TouchableOpacity>
           ))}
         </View>
@@ -115,13 +122,13 @@ export default function SettingsScreen() {
               onPress={option.onPress}
             >
               <View style={styles.settingLeft}>
-                <Ionicons name={option.icon as any} size={24} color="#64748b" />
+                <Ionicons name={option.icon as any} size={24} color={Colors.text.tertiary} />
                 <View style={styles.settingText}>
                   <Text style={styles.settingTitle}>{option.title}</Text>
                   <Text style={styles.settingSubtitle}>{option.subtitle}</Text>
                 </View>
               </View>
-              <Ionicons name="chevron-forward" size={20} color="#64748b" />
+              <Ionicons name="chevron-forward" size={20} color={Colors.text.tertiary} />
             </TouchableOpacity>
           ))}
         </View>
@@ -135,13 +142,13 @@ export default function SettingsScreen() {
               onPress={option.onPress}
             >
               <View style={styles.settingLeft}>
-                <Ionicons name={option.icon as any} size={24} color="#64748b" />
+                <Ionicons name={option.icon as any} size={24} color={Colors.text.tertiary} />
                 <View style={styles.settingText}>
                   <Text style={styles.settingTitle}>{option.title}</Text>
                   <Text style={styles.settingSubtitle}>{option.subtitle}</Text>
                 </View>
               </View>
-              <Ionicons name="chevron-forward" size={20} color="#64748b" />
+              <Ionicons name="chevron-forward" size={20} color={Colors.text.tertiary} />
             </TouchableOpacity>
           ))}
         </View>
@@ -153,8 +160,8 @@ export default function SettingsScreen() {
               mode="outlined"
               onPress={handleSignOut}
               style={styles.signOutButton}
-              textColor="#ef4444"
-              buttonColor="#1e293b"
+              textColor={Colors.semantic.error}
+              buttonColor={Colors.background.secondary}
             >
               Sign Out
             </Button>
@@ -172,41 +179,46 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: Colors.background.primary,
   },
   scrollView: {
     flex: 1,
   },
   header: {
-    padding: 20,
+    padding: Spacing.xl,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
+    borderBottomColor: Colors.ui.border,
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontSize: Typography.fontSize.huge,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.text.primary,
   },
   section: {
-    marginTop: 24,
+    marginTop: Spacing.xxl,
   },
   sectionTitle: {
-    color: '#64748b',
-    fontSize: 14,
-    fontWeight: '600',
+    color: Colors.text.tertiary,
+    fontSize: Typography.fontSize.md,
+    fontWeight: Typography.fontWeight.semibold,
     textTransform: 'uppercase',
-    marginLeft: 20,
-    marginBottom: 8,
+    marginLeft: Spacing.xl,
+    marginBottom: Spacing.sm,
   },
   settingItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
-    paddingVertical: 20,
-    backgroundColor: '#1e293b',
+    padding: Spacing.lg,
+    paddingVertical: Spacing.xl,
+    backgroundColor: Colors.background.secondary,
     borderBottomWidth: 1,
-    borderBottomColor: '#334155',
+    borderBottomColor: Colors.ui.border,
   },
   settingLeft: {
     flexDirection: 'row',
@@ -214,37 +226,37 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   settingText: {
-    marginLeft: 16,
+    marginLeft: Spacing.lg,
     flex: 1,
   },
   settingTitle: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '500',
+    color: Colors.text.primary,
+    fontSize: Typography.fontSize.lg,
+    fontWeight: Typography.fontWeight.medium,
   },
   settingSubtitle: {
-    color: '#64748b',
-    fontSize: 14,
+    color: Colors.text.secondary,
+    fontSize: Typography.fontSize.md,
     marginTop: 2,
   },
   dangerSection: {
-    backgroundColor: '#1e293b',
-    marginHorizontal: 20,
-    padding: 20,
-    borderRadius: 12,
+    backgroundColor: Colors.background.secondary,
+    marginHorizontal: Spacing.xl,
+    padding: Spacing.xl,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: Colors.ui.border,
   },
   signOutButton: {
-    borderColor: '#ef4444',
+    borderColor: Colors.semantic.error,
   },
   footer: {
-    padding: 20,
+    padding: Spacing.xl,
     alignItems: 'center',
     marginTop: 40,
   },
   footerText: {
-    color: '#64748b',
-    fontSize: 14,
+    color: Colors.text.tertiary,
+    fontSize: Typography.fontSize.md,
   },
 });

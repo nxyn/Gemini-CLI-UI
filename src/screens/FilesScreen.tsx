@@ -15,6 +15,9 @@ import { RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Button } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
+import { AnimatedBackground } from '../components/animated/AnimatedBackground';
+import { GlowingGreenAccent } from '../components/animated/GlowingGreenAccent';
+import { Colors, Typography, Spacing, BorderRadius } from '../constants/theme';
 import { supabase } from '../utils/supabase';
 
 interface FileItem {
@@ -143,7 +146,7 @@ export default function FilesScreen() {
           <Ionicons
             name={item.type === 'directory' ? 'folder' : 'document-text'}
             size={20}
-            color={item.type === 'directory' ? '#f59e0b' : '#3b82f6'}
+            color={item.type === 'directory' ? '#f59e0b' : Colors.chloro.primary}
           />
           <Text style={styles.fileName}>{item.name}</Text>
         </View>
@@ -151,7 +154,7 @@ export default function FilesScreen() {
           style={styles.deleteButton}
           onPress={() => deleteFile(item.id)}
         >
-          <Ionicons name="trash-outline" size={18} color="#ef4444" />
+          <Ionicons name="trash-outline" size={18} color={Colors.semantic.error} />
         </TouchableOpacity>
       </View>
       {item.type === 'file' && item.size && (
@@ -175,6 +178,7 @@ export default function FilesScreen() {
 
   return (
     <View style={styles.container}>
+      <AnimatedBackground />
       <View style={styles.header}>
         <Button
           mode="contained"
@@ -193,7 +197,7 @@ export default function FilesScreen() {
         contentContainerStyle={styles.filesList}
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Ionicons name="document-outline" size={48} color="#64748b" />
+            <Ionicons name="document-outline" size={48} color={Colors.text.tertiary} />
             <Text style={styles.emptyTitle}>No files yet</Text>
             <Text style={styles.emptySubtitle}>
               Create your first file to get started
@@ -213,7 +217,7 @@ export default function FilesScreen() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>{selectedFile.name}</Text>
               <TouchableOpacity onPress={() => setShowFileModal(false)}>
-                <Ionicons name="close" size={24} color="#64748b" />
+                <Ionicons name="close" size={24} color={Colors.text.tertiary} />
               </TouchableOpacity>
             </View>
 
@@ -234,7 +238,7 @@ export default function FilesScreen() {
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>New File</Text>
             <TouchableOpacity onPress={() => setShowNewFileModal(false)}>
-              <Ionicons name="close" size={24} color="#64748b" />
+              <Ionicons name="close" size={24} color={Colors.text.tertiary} />
             </TouchableOpacity>
           </View>
 
@@ -245,7 +249,7 @@ export default function FilesScreen() {
               value={newFileName}
               onChangeText={setNewFileName}
               placeholder="example.js"
-              placeholderTextColor="#64748b"
+              placeholderTextColor={Colors.text.tertiary}
               autoCapitalize="none"
             />
 
@@ -255,7 +259,7 @@ export default function FilesScreen() {
               value={newFileContent}
               onChangeText={setNewFileContent}
               placeholder="Enter file content..."
-              placeholderTextColor="#64748b"
+              placeholderTextColor={Colors.text.tertiary}
               multiline
               numberOfLines={8}
               textAlignVertical="top"
@@ -280,7 +284,7 @@ export default function FilesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: Colors.background.primary,
   },
   loadingContainer: {
     flex: 1,
@@ -288,33 +292,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    color: '#94a3b8',
-    fontSize: 16,
+    color: Colors.text.secondary,
+    fontSize: Typography.fontSize.lg,
   },
   header: {
-    padding: 20,
+    padding: Spacing.xl,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
+    borderBottomColor: Colors.ui.border,
   },
   newFileButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: Colors.chloro.primary,
   },
   filesList: {
-    padding: 20,
+    padding: Spacing.xl,
   },
   fileCard: {
-    backgroundColor: '#1e293b',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
+    backgroundColor: Colors.background.secondary,
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.md,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: Colors.ui.border,
   },
   fileHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: Spacing.sm,
   },
   fileInfo: {
     flexDirection: 'row',
@@ -322,90 +326,90 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   fileName: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#fff',
-    marginLeft: 12,
+    fontSize: Typography.fontSize.lg,
+    fontWeight: Typography.fontWeight.medium,
+    color: Colors.text.primary,
+    marginLeft: Spacing.md,
   },
   deleteButton: {
-    padding: 8,
+    padding: Spacing.sm,
   },
   fileSize: {
-    color: '#64748b',
-    fontSize: 14,
+    color: Colors.text.secondary,
+    fontSize: Typography.fontSize.md,
     marginBottom: 4,
   },
   fileDate: {
-    color: '#64748b',
-    fontSize: 12,
+    color: Colors.text.secondary,
+    fontSize: Typography.fontSize.sm,
   },
   emptyState: {
     alignItems: 'center',
     paddingVertical: 60,
   },
   emptyTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-    marginTop: 16,
-    marginBottom: 8,
+    color: Colors.text.primary,
+    fontSize: Typography.fontSize.xl,
+    fontWeight: Typography.fontWeight.semibold,
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.sm,
   },
   emptySubtitle: {
-    color: '#64748b',
-    fontSize: 14,
+    color: Colors.text.secondary,
+    fontSize: Typography.fontSize.md,
     textAlign: 'center',
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: Colors.background.primary,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    padding: Spacing.xl,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
+    borderBottomColor: Colors.ui.border,
   },
   modalTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#fff',
+    fontSize: Typography.fontSize.xxl,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.text.primary,
   },
   fileContentContainer: {
     flex: 1,
-    padding: 20,
+    padding: Spacing.xl,
   },
   fileContent: {
-    color: '#e2e8f0',
-    fontSize: 14,
+    color: Colors.text.secondary,
+    fontSize: Typography.fontSize.md,
     fontFamily: 'monospace',
   },
   modalContent: {
     flex: 1,
-    padding: 20,
+    padding: Spacing.xl,
   },
   inputLabel: {
-    color: '#e2e8f0',
-    fontSize: 16,
-    fontWeight: '500',
-    marginBottom: 8,
+    color: Colors.text.secondary,
+    fontSize: Typography.fontSize.lg,
+    fontWeight: Typography.fontWeight.medium,
+    marginBottom: Spacing.sm,
   },
   input: {
-    backgroundColor: '#1e293b',
+    backgroundColor: Colors.background.secondary,
     borderWidth: 1,
-    borderColor: '#334155',
-    borderRadius: 8,
-    padding: 16,
-    color: '#fff',
-    fontSize: 16,
-    marginBottom: 20,
+    borderColor: Colors.ui.border,
+    borderRadius: Spacing.sm,
+    padding: Spacing.lg,
+    color: Colors.text.primary,
+    fontSize: Typography.fontSize.lg,
+    marginBottom: Spacing.xl,
   },
   textArea: {
     height: 200,
     textAlignVertical: 'top',
   },
   createButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: Colors.chloro.primary,
   },
 });

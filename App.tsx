@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 
@@ -18,6 +18,11 @@ import CodeEditorScreen from './src/screens/CodeEditorScreen';
 // Import services
 import { geminiStorage } from './src/services/geminiStorage';
 import { geminiApi } from './src/services/geminiApi';
+
+// Import theme
+import { Colors, Typography } from './src/constants/theme';
+import { AnimatedBackground } from './src/components/animated/AnimatedBackground';
+import { GlowingGreenAccent } from './src/components/animated/GlowingGreenAccent';
 
 const Stack = createNativeStackNavigator();
 
@@ -44,39 +49,56 @@ export default function App() {
 
   if (isInitializing) {
     return (
-      <LinearGradient
-        colors={['#0f172a', '#1e293b', '#334155']}
-        style={styles.loadingContainer}
-      >
-        <BlurView intensity={80} tint="dark" style={styles.loadingBlur}>
-          <ActivityIndicator size="large" color="#14b8a6" />
-        </BlurView>
-      </LinearGradient>
+      <View style={styles.loadingContainer}>
+        <AnimatedBackground />
+        <View style={styles.loadingContent}>
+          <GlowingGreenAccent size={80} intensity="high" speed="fast" />
+          <Text style={styles.loadingText}>Chloro Code</Text>
+          <ActivityIndicator size="large" color={Colors.chloro.primary} style={styles.loader} />
+        </View>
+      </View>
     );
   }
 
   return (
     <SafeAreaProvider>
-      <NavigationContainer>
-        <StatusBar style="light" backgroundColor="#0f172a" translucent />
+      <NavigationContainer
+        theme={{
+          dark: true,
+          colors: {
+            primary: Colors.chloro.primary,
+            background: Colors.background.primary,
+            card: Colors.background.tertiary,
+            text: Colors.text.primary,
+            border: Colors.ui.border,
+            notification: Colors.chloro.primary,
+          },
+        }}
+      >
+        <StatusBar style="light" backgroundColor={Colors.background.primary} translucent />
         <Stack.Navigator
           screenOptions={{
             headerStyle: {
-              backgroundColor: 'transparent',
+              backgroundColor: Colors.background.secondary,
             },
             headerTransparent: true,
             headerBlurEffect: 'dark',
-            headerTintColor: '#14b8a6',
+            headerTintColor: Colors.chloro.primary,
             headerTitleStyle: {
-              fontWeight: 'bold',
-              color: '#fff',
+              fontWeight: Typography.fontWeight.bold,
+              color: Colors.text.primary,
+              fontSize: Typography.fontSize.xl,
+            },
+            headerShadowVisible: false,
+            contentStyle: {
+              backgroundColor: Colors.background.primary,
             },
           }}
         >
           <Stack.Screen
             name="Projects"
             component={ProjectsScreen}
-            options={{ title: 'Gemini Projects' }}
+            options={{ title: 'Chloro Code' }}
           />
           <Stack.Screen
             name="ProjectDetail"
@@ -86,7 +108,7 @@ export default function App() {
           <Stack.Screen
             name="Chat"
             component={ChatScreen}
-            options={{ title: 'Gemini Chat' }}
+            options={{ title: 'Chat' }}
           />
           <Stack.Screen
             name="Files"
@@ -96,7 +118,7 @@ export default function App() {
           <Stack.Screen
             name="CodeEditor"
             component={CodeEditorScreen}
-            options={{ title: 'Code Editor' }}
+            options={{ title: 'Editor' }}
           />
           <Stack.Screen
             name="Settings"
@@ -112,12 +134,22 @@ export default function App() {
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
+    backgroundColor: Colors.background.primary,
+  },
+  loadingContent: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    gap: 24,
   },
-  loadingBlur: {
-    padding: 40,
-    borderRadius: 20,
-    overflow: 'hidden',
+  loadingText: {
+    color: Colors.text.primary,
+    fontSize: Typography.fontSize.massive,
+    fontWeight: Typography.fontWeight.heavy,
+    marginTop: 16,
+    letterSpacing: -1,
+  },
+  loader: {
+    marginTop: 16,
   },
 });

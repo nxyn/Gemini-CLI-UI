@@ -1,31 +1,31 @@
 {
   "expo": {
-    "name": "Gemini CLI UI",
-    "slug": "gemini-cli-ui",
-    "version": "1.0.0",
+    "name": "Chloro Code",
+    "slug": "chloro-code",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "jsEngine": "hermes",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0f172a"
+      "backgroundColor": "#000000"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.geminicliui.app",
+      "bundleIdentifier": "com.chlorocode.app",
       "jsEngine": "hermes",
-      "buildNumber": "1.0.0"
+      "buildNumber": "2.0.0"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#0f172a"
+        "backgroundColor": "#000000"
       },
-      "package": "com.geminicliui.app",
-      "versionCode": 1,
+      "package": "com.chlorocode.app",
+      "versionCode": 2,
       "compileSdkVersion": 34,
       "targetSdkVersion": 34,
       "minSdkVersion": 23,
@@ -47,6 +47,9 @@
       "bundler": "metro",
       "output": "single",
       "theme": "dark"
-    }
+    },
+    "plugins": [
+      "expo-router"
+    ]
   }
 }

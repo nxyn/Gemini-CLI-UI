@@ -9,6 +9,7 @@ import {
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
+import { Colors, BorderRadius, Shadow } from '../../constants/theme';
 
 interface LiquidGlassCardProps extends TouchableOpacityProps {
   children: React.ReactNode;
@@ -16,14 +17,16 @@ interface LiquidGlassCardProps extends TouchableOpacityProps {
   intensity?: number;
   pressable?: boolean;
   hapticFeedback?: boolean;
+  glowEffect?: boolean;
 }
 
 export const LiquidGlassCard: React.FC<LiquidGlassCardProps> = ({
   children,
   style,
-  intensity = 70,
+  intensity = 80,
   pressable = false,
   hapticFeedback = true,
+  glowEffect = false,
   onPress,
   ...touchableProps
 }) => {
@@ -38,10 +41,11 @@ export const LiquidGlassCard: React.FC<LiquidGlassCardProps> = ({
     <>
       <BlurView intensity={intensity} tint="dark" style={styles.blur}>
         <LinearGradient
-          colors={[
-            'rgba(255, 255, 255, 0.05)',
-            'rgba(255, 255, 255, 0.02)',
-          ]}
+          colors={
+            glowEffect
+              ? [Colors.glass.green, Colors.glass.light, Colors.glass.medium]
+              : [Colors.glass.light, Colors.glass.medium]
+          }
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.gradient}
@@ -51,10 +55,16 @@ export const LiquidGlassCard: React.FC<LiquidGlassCardProps> = ({
     </>
   );
 
+  const containerStyle = [
+    styles.container,
+    glowEffect && styles.glowContainer,
+    style,
+  ];
+
   if (pressable && onPress) {
     return (
       <TouchableOpacity
-        style={[styles.container, style]}
+        style={containerStyle}
         onPress={handlePress}
         activeOpacity={0.8}
         {...touchableProps}
@@ -64,15 +74,19 @@ export const LiquidGlassCard: React.FC<LiquidGlassCardProps> = ({
     );
   }
 
-  return <View style={[styles.container, style]}>{content}</View>;
+  return <View style={containerStyle}>{content}</View>;
 };
 
 const styles = StyleSheet.create({
   container: {
     overflow: 'hidden',
-    borderRadius: 20,
+    borderRadius: BorderRadius.lg,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: Colors.ui.border,
+    backgroundColor: Colors.background.tertiary,
+  },
+  glowContainer: {
+    ...Shadow.medium,
   },
   blur: {
     flex: 1,
