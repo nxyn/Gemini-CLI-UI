@@ -160,33 +160,56 @@ export default function ProjectsScreen({ navigation }: ProjectsScreenProps) {
 
         <View style={styles.projectsList}>
           {projects.length === 0 ? (
-            <LiquidGlassCard style={styles.emptyCard}>
-              <Ionicons name="folder-outline" size={48} color={Colors.chloro.dim} />
+            <LiquidGlassCard style={styles.emptyCard} glowEffect>
+              <GlowingGreenAccent size={60} intensity="medium" speed="normal" />
+              <Ionicons name="folder-outline" size={64} color={Colors.chloro.dim} style={styles.emptyIcon} />
               <Text style={styles.emptyText}>No projects yet</Text>
               <Text style={styles.emptySubtext}>
-                Create your first project to get started with Chloro Code
+                Create your first project to get started with Chloro Code AI assistant
               </Text>
+              <LiquidGlassButton
+                onPress={() => setShowNewProjectModal(true)}
+                title="Create Project"
+                style={styles.emptyButton}
+              />
             </LiquidGlassCard>
           ) : (
-            projects.map((project) => (
+            projects.map((project, index) => (
               <LiquidGlassCard
                 key={project.id}
                 pressable
                 onPress={() => handleProjectPress(project)}
-                style={styles.projectCard}
+                style={[styles.projectCard, { marginBottom: index === projects.length - 1 ? 100 : Spacing.lg }]}
                 glowEffect
               >
                 <View style={styles.projectContent}>
                   <View style={styles.projectHeader}>
-                    <Ionicons name="folder" size={24} color={Colors.chloro.primary} />
-                    <Text style={styles.projectName}>{project.name}</Text>
+                    <View style={styles.projectIconContainer}>
+                      <Ionicons name="folder" size={28} color={Colors.chloro.primary} />
+                    </View>
+                    <View style={styles.projectInfo}>
+                      <Text style={styles.projectName}>{project.name}</Text>
+                      <Text style={styles.projectDate}>
+                        Created {new Date(project.createdAt).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                      </Text>
+                    </View>
                   </View>
 
-                  <Text style={styles.projectDate}>
-                    Created {new Date(project.createdAt).toLocaleDateString()}
-                  </Text>
-
-                  <View style={styles.projectActions}>
+                  <View style={styles.projectFooter}>
+                    <View style={styles.projectStats}>
+                      <View style={styles.statItem}>
+                        <Ionicons name="chatbubbles-outline" size={16} color={Colors.text.secondary} />
+                        <Text style={styles.statText}>0 chats</Text>
+                      </View>
+                      <View style={styles.statItem}>
+                        <Ionicons name="document-outline" size={16} color={Colors.text.secondary} />
+                        <Text style={styles.statText}>0 files</Text>
+                      </View>
+                    </View>
                     <TouchableOpacity
                       onPress={(e) => {
                         e.stopPropagation();
@@ -194,7 +217,7 @@ export default function ProjectsScreen({ navigation }: ProjectsScreenProps) {
                       }}
                       style={styles.deleteButton}
                     >
-                      <Ionicons name="trash-outline" size={20} color={Colors.semantic.error} />
+                      <Ionicons name="trash-outline" size={22} color={Colors.semantic.error} />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -304,46 +327,91 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   projectContent: {
-    gap: Spacing.sm,
+    gap: Spacing.lg,
   },
   projectHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.md,
   },
+  projectIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.chloro.primary + '20',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: Colors.chloro.primary + '40',
+  },
+  projectInfo: {
+    flex: 1,
+    gap: Spacing.xs,
+  },
   projectName: {
     color: Colors.text.primary,
-    fontSize: Typography.fontSize.xl,
-    fontWeight: Typography.fontWeight.semibold,
-    flex: 1,
+    fontSize: Typography.fontSize.xxl,
+    fontWeight: Typography.fontWeight.bold,
+    letterSpacing: -0.5,
   },
   projectDate: {
     color: Colors.text.secondary,
     fontSize: Typography.fontSize.sm,
+    fontWeight: Typography.fontWeight.medium,
   },
-  projectActions: {
+  projectFooter: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginTop: Spacing.sm,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: Spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: Colors.ui.divider,
+  },
+  projectStats: {
+    flexDirection: 'row',
+    gap: Spacing.lg,
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  statText: {
+    color: Colors.text.secondary,
+    fontSize: Typography.fontSize.sm,
+    fontWeight: Typography.fontWeight.medium,
   },
   deleteButton: {
     padding: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.semantic.error + '15',
   },
   emptyCard: {
     alignItems: 'center',
     padding: Spacing.xxxl,
+    gap: Spacing.md,
+  },
+  emptyIcon: {
+    marginTop: Spacing.md,
   },
   emptyText: {
     color: Colors.text.primary,
-    fontSize: Typography.fontSize.xl,
-    fontWeight: Typography.fontWeight.semibold,
-    marginTop: Spacing.lg,
+    fontSize: Typography.fontSize.xxxl,
+    fontWeight: Typography.fontWeight.bold,
+    marginTop: Spacing.md,
+    letterSpacing: -0.5,
   },
   emptySubtext: {
     color: Colors.text.secondary,
-    fontSize: Typography.fontSize.md,
+    fontSize: Typography.fontSize.lg,
     textAlign: 'center',
-    marginTop: Spacing.sm,
+    marginTop: Spacing.xs,
+    lineHeight: Typography.lineHeight.relaxed * Typography.fontSize.lg,
+    maxWidth: 300,
+  },
+  emptyButton: {
+    marginTop: Spacing.lg,
+    minWidth: 200,
   },
   modalOverlay: {
     flex: 1,
