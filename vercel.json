@@ -28,12 +28,20 @@
     "SUPABASE_ANON_KEY": "@supabase-anon-key",
     "SUPABASE_SERVICE_ROLE_KEY": "@supabase-service-role-key",
     "GEMINI_API_KEY": "@gemini-api-key",
+    "BLOB_READ_WRITE_TOKEN": "@blob-read-write-token",
     "EXPO_PUBLIC_SUPABASE_URL": "@expo-public-supabase-url",
     "EXPO_PUBLIC_SUPABASE_ANON_KEY": "@expo-public-supabase-anon-key"
   },
   "functions": {
     "api/**/*.js": {
-      "maxDuration": 30
+      "maxDuration": 60,
+      "memory": 1024
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
+    }
+  ]
 }

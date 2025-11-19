@@ -17,6 +17,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 // Import screens
+import { HomeScreen } from './src/screens/HomeScreen';
 import ProjectsScreen from './src/screens/ProjectsScreen';
 import ProjectDetailScreen from './src/screens/ProjectDetailScreen';
 import ChatScreen from './src/screens/ChatScreen';
@@ -35,6 +36,9 @@ import { GlowingGreenAccent } from './src/components/animated/GlowingGreenAccent
 
 // Import theme
 import { Colors, Typography } from './src/constants/theme';
+
+// Import contexts
+import { AuthProvider } from './src/contexts/AuthContext';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -112,8 +116,9 @@ export default function App() {
   return (
     <ErrorBoundary>
       <SafeAreaProvider>
-        <Animated.View style={[styles.container, animatedStyle]} onLayout={onLayoutRootView}>
-          <NavigationContainer
+        <AuthProvider>
+          <Animated.View style={[styles.container, animatedStyle]} onLayout={onLayoutRootView}>
+            <NavigationContainer
             theme={{
               dark: true,
               colors: {
@@ -166,6 +171,11 @@ export default function App() {
               }}
             >
               <Stack.Screen
+                name="Home"
+                component={HomeScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
                 name="Projects"
                 component={ProjectsScreen}
                 options={{ title: 'Chloro Code' }}
@@ -196,8 +206,9 @@ export default function App() {
                 options={{ title: 'Settings' }}
               />
             </Stack.Navigator>
-          </NavigationContainer>
-        </Animated.View>
+            </NavigationContainer>
+          </Animated.View>
+        </AuthProvider>
       </SafeAreaProvider>
     </ErrorBoundary>
   );
