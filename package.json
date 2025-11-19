@@ -7,8 +7,11 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
+    "web": "expo start --web",
     "build:android": "eas build --platform android",
     "build:ios": "eas build --platform ios",
+    "build:web": "expo export:web",
+    "vercel-build": "expo export:web",
     "clean": "rm -rf node_modules && npm install"
   },
   "dependencies": {
@@ -20,6 +23,7 @@
     "@react-navigation/native-stack": "^7.0.0",
     "@react-navigation/stack": "^7.0.0",
     "@supabase/supabase-js": "^2.81.1",
+    "@vercel/blob": "^0.24.1",
     "expo": "~54.0.0",
     "expo-blur": "~15.0.0",
     "expo-constants": "^18.0.10",

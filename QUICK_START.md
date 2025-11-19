@@ -1,14 +1,14 @@
-# 🚀 Quick Start Guide - Chloro Code
+# Quick Start Guide 🚀
 
-Get your premium Expo app running in 5 minutes!
+Get your app running in 5 minutes!
 
 ## Prerequisites
 
-Make sure you have:
-- ✅ Node.js 18+ installed
-- ✅ npm or yarn package manager
-- ✅ Expo CLI (will be installed with dependencies)
-- ✅ A mobile device or emulator
+- Node.js 18+ installed
+- npm or yarn
+- Vercel account (free)
+- Supabase account (free)
+- Google Gemini API key (free tier available)
 
 ## Step 1: Install Dependencies
 
@@ -16,222 +16,123 @@ Make sure you have:
 npm install
 ```
 
-This will install all required packages including:
-- Expo SDK 54
-- React Native 0.76
-- React Native Reanimated
-- All UI components
+## Step 2: Set Up Supabase (5 minutes)
 
-## Step 2: Start Development Server
+### Create Project
+1. Go to https://supabase.com
+2. Click "New Project"
+3. Fill in project details
+4. Wait for setup to complete
 
-```bash
-npm start
-```
+### Run Database Migration
+1. Go to SQL Editor in Supabase dashboard
+2. Create a new query
+3. Copy contents from `supabase-schema-updated.sql`
+4. Paste and click "Run"
+5. Verify tables are created (check Database > Tables)
 
-This will:
-- Start the Expo development server
-- Open the Expo DevTools in your browser
-- Show a QR code for testing
+### Get API Keys
+1. Go to Settings > API
+2. Copy these values:
+   - Project URL
+   - anon public key
+   - service_role key (keep secret!)
 
-## Step 3: Run on Device
+## Step 3: Get API Keys (2 minutes)
 
-### Option A: Physical Device
-1. Install "Expo Go" app from App Store (iOS) or Play Store (Android)
-2. Scan the QR code from your terminal
-3. App will load on your device
+### Google Gemini
+1. Go to https://ai.google.dev/
+2. Click "Get API Key"
+3. Create new key
+4. Copy the key
 
-### Option B: iOS Simulator (Mac only)
-```bash
-npm run ios
-```
+### Vercel Blob (after first deploy)
+1. Will be created during Vercel setup
+2. See Step 5 for details
 
-### Option C: Android Emulator
-```bash
-npm run android
-```
+## Step 4: Configure Environment (1 minute)
 
-## Step 4: Experience the Magic ✨
+Create `.env` file:
 
-Once the app loads, you'll see:
-1. **Premium Splash Screen** with glowing animations
-2. **Liquid Glass UI** with blur effects
-3. **Smooth Animations** at 60fps
-4. **Haptic Feedback** on every interaction
-
-## What to Try
-
-### 1. Create a Project
-- Tap "New Project" button
-- Feel the haptic feedback
-- Watch the modal animate in
-- See the shimmer effects
-
-### 2. Explore Animations
-- Press any button - feel the scale animation
-- Focus on input - watch it glow
-- Swipe cards - see gesture animations
-- Navigate screens - smooth transitions
-
-### 3. Test Features
-- Create multiple projects
-- Navigate to project details
-- Try the chat interface
-- Explore settings
-
-## Development Tips
-
-### Hot Reload
-The app supports hot reload. Just save your files and changes appear instantly!
-
-### Debug Menu
-- iOS: Shake device or Cmd+D
-- Android: Shake device or Cmd+M
-
-### Clear Cache
-If you encounter issues:
-```bash
-npm start -- --clear
-```
-
-## Build Commands
-
-### Preview Build (Internal Testing)
-```bash
-eas build --profile preview --platform android
-```
-
-### Production Build
-```bash
-eas build --profile production --platform android
-```
-
-### Production AAB (Play Store)
-```bash
-eas build --profile production-aab --platform android
-```
-
-## Project Structure
-
-```
-chloro-code/
-├── App.tsx              # Entry point with splash screen
-├── src/
-│   ├── components/      # Reusable components
-│   │   ├── liquid/      # Liquid glass components
-│   │   └── animated/    # Animated components
-│   ├── screens/         # App screens
-│   ├── services/        # API services
-│   └── constants/       # Theme and constants
-├── app.json            # Expo configuration
-└── package.json        # Dependencies
-```
-
-## Environment Setup
-
-### API Keys
-Copy the example environment file:
 ```bash
 cp .env.example .env
 ```
 
-Add your Gemini API key:
-```
-GEMINI_API_KEY=your_key_here
-```
+Edit `.env`:
 
-## Common Issues
-
-### Metro Bundler Issues
 ```bash
-rm -rf node_modules
-npm install
-npm start -- --clear
+# Supabase
+EXPO_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
+
+# Gemini
+GEMINI_API_KEY=your_gemini_key_here
 ```
 
-### iOS Build Issues
+## Step 5: Deploy to Vercel (3 minutes)
+
+### Install Vercel CLI
 ```bash
-cd ios
-pod install
-cd ..
+npm install -g vercel
 ```
 
-### Android Build Issues
+### Login
 ```bash
-cd android
-./gradlew clean
-cd ..
+vercel login
 ```
 
-## VS Code Extensions
+### Deploy
+```bash
+vercel --prod
+```
 
-Recommended extensions:
-- **React Native Tools**
-- **ESLint**
-- **Prettier**
-- **Auto Import**
+### Set Up Blob Storage
+1. Go to Vercel dashboard
+2. Select your project
+3. Go to Storage tab
+4. Click "Create Database"
+5. Select "Blob"
+6. Create store
+7. Copy `BLOB_READ_WRITE_TOKEN`
 
-## Key Features to Notice
+### Add Environment Variables in Vercel
+1. Go to Settings > Environment Variables
+2. Add all variables from `.env`
+3. Add `BLOB_READ_WRITE_TOKEN`
+4. Add server-only variables:
+   ```
+   SUPABASE_URL=https://xxxxx.supabase.co
+   SUPABASE_ANON_KEY=xxx
+   SUPABASE_SERVICE_ROLE_KEY=xxx
+   ```
+5. Redeploy: `vercel --prod`
 
-### 1. Liquid Glass Components
-- Blur effects
-- Gradient overlays
-- Shimmer animations
-- Glow effects
+## Step 6: Test Your Deployment
 
-### 2. Animations
-- Spring physics
-- Scale transformations
-- Fade transitions
-- Shimmer sweeps
+1. Visit your deployed URL (shown after `vercel --prod`)
+2. Click "Sign Up" to create account
+3. Create a new project using gradient cards
+4. Test chat with Gemini
+5. Upload a file
 
-### 3. Haptic Feedback
-- Button presses
-- Navigation
-- Deletions
-- Success/Error states
+## Run Locally
 
-### 4. Error Handling
-- Try throwing an error to see the ErrorBoundary
-- Beautiful error UI with retry
+### Web
+```bash
+npm run web
+```
+Visit http://localhost:19006
 
-### 5. Loading States
-- Skeleton loaders
-- Smooth transitions
-- Animated placeholders
+### iOS
+```bash
+npm run ios
+```
 
-## Performance
+### Android
+```bash
+npm run android
+```
 
-The app is optimized for:
-- ✅ 60fps animations
-- ✅ Fast startup (<2s)
-- ✅ Smooth scrolling
-- ✅ Efficient re-renders
+## Success! 🎉
 
-## Resources
-
-- 📚 [Full Documentation](./PRODUCTION_READY.md)
-- 🎨 [Design System](./src/constants/theme.ts)
-- 🏗️ [Build Guide](./BUILD_INSTRUCTIONS.md)
-- 📱 [Expo Docs](https://docs.expo.dev)
-
-## Need Help?
-
-1. Check `PRODUCTION_READY.md` for detailed info
-2. Review component source code
-3. Check Expo documentation
-4. Review React Native Reanimated docs
-
-## What's Next?
-
-After getting familiar with the app:
-1. ✅ Customize colors in `src/constants/theme.ts`
-2. ✅ Add your own screens
-3. ✅ Integrate your backend
-4. ✅ Add more features
-5. ✅ Build and deploy!
-
----
-
-**Happy coding! 🎉**
-
-Your app is production-ready and looks amazing!
+Your app should now be running!
